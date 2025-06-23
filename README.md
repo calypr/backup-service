@@ -16,33 +16,60 @@
 
 Data backup and recovery service for the CALYPR systems 🔄
 
-## Backups ↩️
-
-| Service   | Postgres Database   | S3 Bucket                     |
-| --------- | ------------------- | ----------------------------- |
-| Arborist  | `arborist-EXAMPLE`  | `arborist-EXAMPLE-TIMESTAMP`  |
-| Fence     | `fence-EXAMPLE`     | `fence-EXAMPLE-TIMESTAMP`     |
-| Gecko     | `gecko-EXAMPLE`     | `gecko-EXAMPLE-TIMESTAMP`     |
-| Indexd    | `indexd-EXAMPLE`    | `indexd-EXAMPLE-TIMESTAMP`    |
-| Requestor | `requestor-EXAMPLE` | `requestor-EXAMPLE-TIMESTAMP` |
-
 # 2. Quick Start ⚡
 
 ```sh
-➜ chmod +x main.sh
+➜ python3 -m venv venv && source venv/bin/activate
 
-➜ ./main.sh
+➜ python backup.py
+```
+
+# 3. Backups ↩️
+
+| Service                | Postgres Database   | Database Backup Name          | Description                                      |
+| ---------------------- | ------------------- | ----------------------------- | ------------------------------------------------ |
+| [Arborist][arborist]   | `arborist-EXAMPLE`  | `arborist-EXAMPLE-TIMESTAMP`  | Gen3 policy engine                               |
+| [Fence][fence]         | `fence-EXAMPLE`     | `fence-EXAMPLE-TIMESTAMP`     | AuthN/AuthZ OIDC service                         |
+| [Gecko][gecko]         | `gecko-EXAMPLE`     | `gecko-EXAMPLE-TIMESTAMP`     | Frontend configurations for dynamic data loading |
+| [Indexd][indexd]       | `indexd-EXAMPLE`    | `indexd-EXAMPLE-TIMESTAMP`    | Data indexing and tracking service               |
+| [Requestor][requestor] | `requestor-EXAMPLE` | `requestor-EXAMPLE-TIMESTAMP` | Data access manager                              |
+
+[arborist]: https://github.com/uc-cdis/arborist
+[fence]: https://github.com/uc-cdis/fence
+[gecko]: https://github.com/aced-idp/gecko
+[indexd]: https://github.com/uc-cdis/indexd
+[requestor]: https://github.com/uc-cdis/requestor
+
+# 4. Architecture 🛠️
+
+Inputs:
+- Postgres credentials
+- Postgres databases
+- S3 credentials
+- S3 endpoint
+- S3 bucket
+
+```mermaid
+sequenceDiagram
+    participant Backup as Backup Service
+    participant Database
+    participant S3 as S3 Bucket
+
+    Title: Gen3 Backups
+
+    Backup-->>Database: Database Credentials
+
+    Note over Database: `pg_dump`
+
+    Database-->>Backup: Database Backup
+
+    Backup-->>S3: Database Backup
 ```
 
 # 3. Additional Resources 📚
 
-- Gen3 Graph Data Flow:
+- [Gen3 Graph Data Flow](https://docs.gen3.org/gen3-resources/developer-guide/architecture/#gen3-graph-data-flow)
 
-  > https://docs.gen3.org/gen3-resources/developer-guide/architecture/#gen3-graph-data-flow
+- [Data Submission System](https://gen3.org/resources/developer/#data-submission-system)
 
-- Data Submission System (legacy docs):
-
-  > https://gen3.org/resources/developer/#data-submission-system
-
-- Gen3’s Microservices (legacy docs):
-  > https://gen3.org/resources/developer/microservice/
+- [Gen3’s Microservices](https://gen3.org/resources/developer/microservice/)
