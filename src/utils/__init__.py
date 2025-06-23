@@ -1,6 +1,7 @@
 import psycopg2
+from typing import Optional
 
-def connect_to_database() -> psycopg2.extensions.connection:
+def connect_to_database() -> Optional[psycopg2.extensions.connection]:
     """
     Connects to the database.
     """
