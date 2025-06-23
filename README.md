@@ -12,7 +12,7 @@
 [helm-badge]: https://img.shields.io/badge/Helm-0F1689?logo=helm&logoColor=fff
 [helm]: https://github.com/ohsu-comp-bio/helm-charts/tree/main/charts/backups
 
-# 2. Overview ⚙️
+# 1. Overview ⚙️
 
 Data backup and recovery service for the CALYPR systems 🔄
 
