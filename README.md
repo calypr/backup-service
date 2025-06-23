@@ -24,7 +24,9 @@ Data backup and recovery service for the CALYPR systems 🔄
 ```sh
 ➜ python3 -m venv venv && source venv/bin/activate
 
-➜ python backup.py
+➜ pip install -e .
+
+➜ backup-service --help
 ```
 
 # 3. Backups ↩️
