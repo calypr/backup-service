@@ -2,7 +2,7 @@
 # Adapted from actions-arm64-native-example by @gartnera
 # ref: https://github.com/gartnera/actions-arm64-native-example/blob/main/.github/workflows/build.yml
 
-name: build
+name: Build Image
 
 on:
   push:
