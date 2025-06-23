@@ -15,6 +15,9 @@
 [helm-badge]: https://img.shields.io/badge/Helm-0F1689?logo=helm&logoColor=fff
 [helm]: https://github.com/ohsu-comp-bio/helm-charts/tree/main/charts/backups
 
+[tests-badge]: https://img.shields.io/github/actions/workflow/status/aced-idp/backup-service/tests.yaml
+[tests]: https://github.com/ACED-IDP/backup-service/actions/workflows/tests.yaml
+
 # 1. Overview ⚙️
 
 Data backup and recovery service for the CALYPR systems 🔄
