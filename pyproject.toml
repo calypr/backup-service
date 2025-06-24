@@ -1,7 +1,10 @@
 [project]
-name = "backup-service"
+name = "backup"
 version = "0.1.0"
 description = "Data backup and recovery service for the CALYPR systems 🔄"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
+
+[project.scripts]
+backup = "backup.main:cli"

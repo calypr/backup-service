@@ -1,3 +1,4 @@
 pytest
 psycopg2
 boto3
+click

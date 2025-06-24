@@ -1,25 +1,43 @@
-from utils import connect_to_database, create_database_dump, upload_to_s3   
+from backup import connect, dump, upload
 
-def test_database_connection():
+
+# --- Example of how to use the fixture in a test ---
+def test_connection(test_database):
     """
     Tests connecting to the database.
     """
-    # connect_to_database()
+    print(f"Test received database URL: {test_database}")
+    connection = connect(
+        host=test_database.host,
+        user=test_database.user,
+        password=test_database.password,
+    )
 
-    assert True
+    assert connection is not None
 
-def test_database_dump():
+
+def test_dump(test_database):
     """
     Tests creating a database dump.
     """
-    create_database_dump()
+    dump_file = dump(connection)
+    assert dump_file is not None
 
-    assert True
 
-def test_s3_upload():
+def test_upload(test_database):
     """
     Tests uploading database dump to S3.
     """
-    upload_to_s3("database_dump.sql")
+    connection = connect(
+        host=test_database.host,
+        user=test_database.user,
+        password=test_database.password,
+    )
+    assert connection is not None, "Failed to connect to the database"
+
+    dump_file = dump(connection)
+    assert dump_file is not None
+
+    upload("test.sql", "test-bucket")
 
     assert True
