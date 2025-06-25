@@ -34,13 +34,14 @@ Data backup and recovery service for the CALYPR systems 🔄
 Usage: backup [OPTIONS]
 
 Options:
-  -H, --host TEXT      Postgres host ($PGHOST)  [required]
-  -d, --database TEXT  Postgres database name ($PGDATABASE)  [required]
-  -u, --user TEXT      Postgres username ($PGUSER)  [required]
-  -p, --password TEXT  Postgres password ($PGPASSWORD)  [required]
-  -o, --output TEXT    Output of database dump (e.g. s3://example-bucket/)
-                       [required]
-  -v, --verbose        Enable verbose output.
+  -H, --host TEXT      Postgres host ($PGHOST)
+  -p, --port INTEGER   Postgres port ($PGPORT)
+  -u, --user TEXT      Postgres username ($PGUSER)
+  -P, --password TEXT  Postgres password ($PGPASSWORD)
+  -e, --endpoint TEXT  S3 endpoint URL (e.g. rgw.ohsu.edu)  [required]
+  -b, --bucket TEXT    S3 bucket name (e.g. example-bucket)
+  -k, --key TEXT       S3 key id
+  -s, --secret TEXT    S3 secret key
   --version            Show the version and exit.
   --help               Show this message and exit.
 ```
