@@ -1,60 +1,111 @@
+from backup import (
+    connect,
+    dumpDbs,
+    listDbs,
+    upload,
+    PostgresConfig,
+    S3Config,
+)
+
 import click
-from backup import connect, dump, upload
-import importlib.metadata
 
 
 @click.command()
+
+# Postgres Config
 @click.option(
-    "--host", "-H", envvar="PGHOST", required=True, help="Postgres host ($PGHOST)"
+    "--host",
+    "-H",
+    envvar="PGHOST",
+    help="Postgres host ($PGHOST)",
+    default="localhost",
 )
 @click.option(
-    "--database",
-    "-d",
-    envvar="PGDATABASE",
-    required=True,
-    help="Postgres database name ($PGDATABASE)",
+    "--port",
+    "-p",
+    envvar="PGPORT",
+    help="Postgres port ($PGPORT)",
+    default=5432,
 )
 @click.option(
-    "--user", "-u", envvar="PGUSER", required=True, help="Postgres username ($PGUSER)"
+    "--user",
+    "-u",
+    envvar="PGUSER",
+    help="Postgres username ($PGUSER)",
+    default="postgres",
 )
 @click.option(
     "--password",
-    "-p",
+    "-P",
     envvar="PGPASSWORD",
     help="Postgres password ($PGPASSWORD)",
+)
+
+# S3 Config
+@click.option(
+    "--endpoint",
+    "-e",
+    help="S3 endpoint URL (e.g. rgw.ohsu.edu)",
     required=True,
 )
 @click.option(
-    "--output",
-    "-o",
-    required=True,
-    help="Output of database dump (e.g. s3://example-bucket/)",
+    "--bucket",
+    "-b",
+    help="S3 bucket name (e.g. example-bucket)",
 )
-@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output.")
+@click.option(
+    "--key",
+    "-k",
+    help="S3 key id",
+)
+@click.option(
+    "--secret",
+    "-s",
+    help="S3 secret key",
+)
 @click.version_option()
 def cli(
-    database: str,
     host: str,
+    port: int,
     user: str,
     password: str,
-    output: str,
-    verbose: bool,
+    endpoint: str,
+    bucket: str,
+    key: str,
+    secret: str,
 ):
-    if verbose:
-        print("Verbose mode is enabled.")
+    # Postgres config
+    p = PostgresConfig(
+        host=host,
+        port=port,
+        user=user,
+        password=password,
+    )
 
-    conn = connect(database, host, user, password)
-    if not conn:
-        print("Failed to connect to the database.")
-        return
+    # S3 config
+    s3 = S3Config(
+        endpoint_url=endpoint,
+        bucket=bucket,
+        key=key,
+        secret=secret,
+    )
 
-    dump_file = dump(conn)
-    if not dump_file:
-        print("Failed to create database dump.")
-        return
+    # 1. Connect to Postgres
+    c = connect(p)
 
-    upload(dump_file, output)
+    # 2. List databases
+    dbs = listDbs(c)
 
+    # 3. Dump databases
+    dir = dumpDbs(p, dbs)
+
+    # 4. Upload dump to S3
+    err = upload(s3, dir)
+
+    if err:
+        print(f"Error uploading to S3: {err}")
+    else:
+        print("OK")
 
 if __name__ == "__main__":
     cli()

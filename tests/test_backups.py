@@ -1,43 +1,56 @@
-from backup import connect, dump, upload
+from backup import (
+    S3Config,
+    connect,
+    dumpDbs,
+    listDbs,
+    upload,
+)
+from pathlib import Path
 
 
-# --- Example of how to use the fixture in a test ---
-def test_connection(test_database):
+def testConnect(testPostgres):
     """
     Tests connecting to the database.
     """
-    print(f"Test received database URL: {test_database}")
-    connection = connect(
-        host=test_database.host,
-        user=test_database.user,
-        password=test_database.password,
-    )
+    print(f"Test received database URL: {testPostgres}")
 
+    connection = connect(testPostgres)
+
+    # TODO: Improve test
     assert connection is not None
 
 
-def test_dump(test_database):
+def testListDbs(testPostgres):
     """
-    Tests creating a database dump.
+    Tests listing databases in the PostgreSQL server.
     """
-    dump_file = dump(connection)
-    assert dump_file is not None
+    connection = connect(testPostgres)
+    dbs = listDbs(connection)
+
+    # TODO: Improve test
+    assert isinstance(dbs, list)
 
 
-def test_upload(test_database):
+def testDumpDb(testPostgres):
+    """
+    Tests creating a dump of a specific database.
+    """
+
+    connection = connect(testPostgres)
+    dbs = listDbs(connection)
+    dir = dumpDbs(testPostgres, dbs)
+
+    # TODO: Improve test
+    assert dir.is_dir(), "Dump directory should be created"
+
+
+def testUpload():
     """
     Tests uploading database dump to S3.
     """
-    connection = connect(
-        host=test_database.host,
-        user=test_database.user,
-        password=test_database.password,
-    )
-    assert connection is not None, "Failed to connect to the database"
 
-    dump_file = dump(connection)
-    assert dump_file is not None
+    # TODO: Add test S3 configuration
+    err = upload(testS3, testDir)
 
-    upload("test.sql", "test-bucket")
-
-    assert True
+    # TODO: Improve test
+    assert err is None, "Upload should not return an error"
