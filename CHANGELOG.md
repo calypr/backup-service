@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/ACED-IDP/backup-service/compare/v1.0.2...v1.1.0) (2025-06-25)
+
+
+### Features
+
+* Add backup functionality and tests ([de3352c](https://github.com/ACED-IDP/backup-service/commit/de3352cbd7801c5fcfe0603cd1a4add5fcf176ac))
+
 ## [1.0.2](https://github.com/ACED-IDP/backup-service/compare/v1.0.1...v1.0.2) (2025-06-24)
 
 
