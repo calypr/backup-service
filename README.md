@@ -112,3 +112,9 @@ sequenceDiagram
 - [Data Submission System](https://gen3.org/resources/developer/#data-submission-system)
 
 - [Gen3’s Microservices](https://gen3.org/resources/developer/microservice/)
+
+- [**AWS**: PostgreSQL pg_dump and pg_restore utility](https://docs.aws.amazon.com/dms/latest/sbs/chap-manageddatabases.postgresql-rds-postgresql-full-load-pd_dump.html)
+
+- [**Postgres**: pg_dump](https://www.postgresql.org/docs/current/app-pgdump.html)
+
+- [**Postgres**: pg_restore](https://www.postgresql.org/docs/current/app-pgrestore.html)
