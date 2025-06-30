@@ -10,7 +10,7 @@ import subprocess
 
 @dataclass
 class PostgresConfig:
-    """Postgres database connection detail"""
+    """Postgres config"""
 
     host: str
     port: int
@@ -20,7 +20,7 @@ class PostgresConfig:
 
 @dataclass
 class S3Config:
-    """S3 configuration details"""
+    """S3 config"""
 
     endpoint_url: str
     bucket: str
@@ -28,7 +28,7 @@ class S3Config:
     secret: str
 
 
-def connect(p: PostgresConfig) -> connection:
+def _connect(p: PostgresConfig) -> connection:
     """
     Connects to a given database.
     """
@@ -51,7 +51,7 @@ def connect(p: PostgresConfig) -> connection:
     return connection
 
 
-def listDbs(c: connection) -> list[str]:
+def _listDbs(c: connection) -> list[str]:
     """
     Retrieves the names of all databases in the PostgreSQL server.
     """
@@ -64,31 +64,7 @@ def listDbs(c: connection) -> list[str]:
     return db_names
 
 
-def dumpDbs(p: PostgresConfig, dbs: list[str]) -> Path:
-    """
-    Dumps all databases to a specified directory.
-    """
-
-    # Shared timestamp for all dumps
-    timestamp = datetime.now().isoformat()
-
-    # Dump directory
-    dir = Path("backups") / timestamp
-    dir.mkdir(parents=True, exist_ok=True)
-
-    for db in dbs:
-        dumpFile = _dumpDb(p, db, dir)
-        if not dumpFile:
-            print("Failed to create database dump.")
-            raise
-
-    for database in dbs:
-        _dumpDb(p, database, dir)
-
-    return dir
-
-
-def _dumpDb(p: PostgresConfig, database: str, dir: Path) -> Optional[Path]:
+def _dump(p: PostgresConfig, database: str, dir: Path) -> Optional[Path]:
     """
     Creates a single database dump.
     """
@@ -126,7 +102,47 @@ def _dumpDb(p: PostgresConfig, database: str, dir: Path) -> Optional[Path]:
         return None
 
 
-def upload(
+def _dumpAll(p: PostgresConfig) -> Path:
+    """
+    Dumps all databases from a Postgres instance to a specified directory.
+    """
+
+    dbs = _listDbs(_connect(p))
+
+    # Shared timestamp for all dumps
+    timestamp = datetime.now().isoformat()
+
+    # Dump directory
+    dir = Path("backups") / timestamp
+    dir.mkdir(parents=True, exist_ok=True)
+
+    for db in dbs:
+        dumpFile = _dump(p, db, dir)
+        if not dumpFile:
+            print("Failed to create database dump.")
+            raise
+
+    for database in dbs:
+        _dump(p, database, dir)
+
+    return dir
+
+
+def _restore(p: PostgresConfig, database: str, dir: Path) -> Optional[Path]:
+    """
+    Restores a single database from a dump file.
+    """
+    pass
+
+
+def _restoreAll(p: PostgresConfig, dbs: list[str]) -> Optional[Path]:
+    """
+    Restores all databases from a specified directory.
+    """
+    pass
+
+
+def _upload(
     s3: S3Config,
     dir: Path,
 ):
@@ -146,3 +162,25 @@ def upload(
 
     except Exception as err:
         print(f"Failed to upload files to S3: {err}")
+
+
+def _download(
+    s3: S3Config,
+    dir: Path,
+):
+    """
+    Downloads a file from S3 (MinIO/Ceph compatible).
+    """
+    try:
+        client = boto3.client(
+            "s3",
+            endpoint_url=s3.endpoint_url,
+            aws_access_key_id=s3.key,
+            aws_secret_access_key=s3.secret,
+        )
+        for obj in client.list_objects_v2(Bucket=s3.bucket).get("Contents", []):
+            print(f"Downloading {obj['Key']} from bucket {s3.bucket}")
+            client.download_file(s3.bucket, obj["Key"], dir / obj["Key"])
+
+    except Exception as err:
+        print(f"Failed to download files from S3: {err}")

@@ -110,3 +110,6 @@ venv.bak/
 
 # PyPI configuration file
 .pypirc
+
+# SQL files
+.sql
