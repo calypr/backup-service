@@ -5,168 +5,104 @@ from backup import (
     _connect,
     _download,
     _dump,
-    _dumpAll,
+    _getDbs,
     _listDbs,
     _restore,
-    _restoreAll,
     _upload,
 )
+from .utils import postgres_options, s3_options, dir_options
+import logging
 
 
-@click.group()
+@click.group(context_settings=dict(allow_interspersed_args=True))
 @click.version_option()
-def cli():
-    pass
+@click.option(
+    "--verbose",
+    "-v",
+    "--debug",
+    is_flag=True,
+    default=False,
+    help="Enable verbose (DEBUG) logging.",
+)
+def cli(verbose):
+    # Set the default level to INFO
+    level = logging.INFO
 
+    # If the flag is set, change the level to DEBUG
+    if verbose:
+        level = logging.DEBUG
+    
+    # Configure logging once with the determined level
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+    )
 
 @cli.command()
-@click.option(
-    "--host", "-H", envvar="PGHOST", default="localhost", show_default=True, help="Postgres host ($PGHOST)"
-)
-@click.option(
-    "--port", "-p", envvar="PGPORT", default=5432, show_default=True, help="Postgres port ($PGPORT)"
-)
-@click.option(
-    "--user",
-    "-u",
-    envvar="PGUSER",
-    default="postgres", show_default=True,
-    help="Postgres username ($PGUSER)",
-)
-@click.option(
-    "--password", "-P", envvar="PGPASSWORD", help="Postgres password ($PGPASSWORD)"
-)
-@click.option("--endpoint", "-e", required=True, help="S3 endpoint URL")
-@click.option("--dir", "-d", required=False, default='.', show_default=True, help="Dump directory")
-@click.option("--bucket", "-b", required=True, help="S3 bucket name")
-@click.option("--key", "-k", required=True, help="S3 key id")
-@click.option("--secret", "-s", required=True, help="S3 secret key")
+@postgres_options
+@s3_options
 def backup(host, port, user, password, endpoint, dir, bucket, key, secret):
     """Postgres ➜ S3"""
     p = PostgresConfig(host=host, port=port, user=user, password=password)
     s3 = S3Config(endpoint_url=endpoint, bucket=bucket, key=key, secret=secret)
 
-    # Connect to Postgres
-    c = _connect(p)
-    
-    # List databases 
-    dbs = _listDbs(c)
-    
+    # List databases
+    dbs = _getDbs(p)
+
     # Dump databases
-    for db in dbs:
-        _ = _dump(p, db, dir)
-    
+    for database in dbs:
+        _ = _dump(p, database, dir)
+
     # Upload dumps to S3
-    err = _upload(s3, dir)
-    if err:
-        print(f"Error uploading to S3: {err}")
-    else:
-        print("Backup OK")
+    _ = _upload(s3, dir)
 
 
 @cli.command()
-@click.option(
-    "--host", "-H", envvar="PGHOST", default="localhost", show_default=True, help="Postgres host ($PGHOST)"
-)
-@click.option(
-    "--port", "-p", envvar="PGPORT", default=5432, show_default=True, help="Postgres port ($PGPORT)"
-)
-@click.option(
-    "--user",
-    "-u",
-    envvar="PGUSER",
-    default="postgres",
-    show_default=True,
-    help="Postgres username ($PGUSER)",
-)
-@click.option(
-    "--password", "-P", envvar="PGPASSWORD", help="Postgres password ($PGPASSWORD)"
-)
-@click.option(
-    "--dbs",
-    "-d",
-    multiple=True,
-    help="Databases to dump (repeat for multiple, empty for all)",
-)
-@click.option("--output", "-o", default=".", show_default=True, help="Output directory for dumps")
-def restore(host, port, user, password, dbs, dir):
+@postgres_options
+@dir_options
+def restore(host, port, user, password, dir):
     """S3 ➜ Postgres"""
     p = PostgresConfig(host=host, port=port, user=user, password=password)
-    c = _connect(p)
-    dir = _restore(p, dbs, dir)
-    print(f"Dumped databases to {dir}")
 
+    # Restore databases
+    for database in _getDbs(p):
+        _ = _restore(p, database, dir)
 
-@cli.command()
-@click.option(
-    "--host", "-H", envvar="PGHOST", default="localhost", show_default=True, help="Postgres host ($PGHOST)"
-)
-@click.option(
-    "--port", "-p", envvar="PGPORT", default=5432, show_default=True, help="Postgres port ($PGPORT)"
-)
-@click.option(
-    "--user",
-    "-u",
-    envvar="PGUSER",
-    default="postgres",
-    show_default=True,
-    help="Postgres username ($PGUSER)",
-)
-@click.option(
-    "--password", "-P", envvar="PGPASSWORD", help="Postgres password ($PGPASSWORD)"
-)
-@click.option(
-    "--dbs",
-    "-d",
-    multiple=True,
-    help="Databases to dump (repeat for multiple, empty for all)",
-)
-@click.option("--dir", "-d", default=".", show_default=True, help="Output directory for dumps")
-def dump(host, port, user, password, dbs, dir):
-    """Postgres ➜ local"""
-    p = PostgresConfig(host=host, port=port, user=user, password=password)
-    c = _connect(p)
-    dbs = _listDbs(dbs) if dbs else _listDbs(c)
-    for db in dbs:
-        dump = _dump(p, db, dir)
-        print(f"Dumped {db} to {dump}")
 
 
 @cli.command(name="ls")
-@click.option(
-    "--host", "-H", envvar="PGHOST", default="localhost", show_default=True, help="Postgres host ($PGHOST)"
-)
-@click.option(
-    "--port", "-p", envvar="PGPORT", default=5432, show_default=True, help="Postgres port ($PGPORT)"
-)
-@click.option(
-    "--user",
-    "-u",
-    envvar="PGUSER",
-    default="postgres", show_default=True,
-    help="Postgres username ($PGUSER)",
-)
-@click.option(
-    "--password", "-P", envvar="PGPASSWORD", help="Postgres password ($PGPASSWORD)"
-)
+@postgres_options
 def listDbs(host, port, user, password):
     """List databases"""
     p = PostgresConfig(host=host, port=port, user=user, password=password)
-    c = _connect(p)
-    dbs = _listDbs(c)
-    for db in dbs:
-        print(db)
+
+    # List databases
+    for database in _getDbs(p):
+        print(database)
+
 
 
 @cli.command()
-@click.option("--endpoint", "-e", required=True, help="S3 endpoint URL")
-@click.option("--bucket", "-b", required=True, help="S3 bucket name")
-@click.option("--key", "-k", required=True, help="S3 key id")
-@click.option("--secret", "-s", required=True, help="S3 secret key")
-@click.option("--dir", "-d", required=True, help="Dump directory")
+@postgres_options
+@dir_options
+def dump(host, port, user, password, dir):
+    """Postgres ➜ local"""
+    p = PostgresConfig(host=host, port=port, user=user, password=password)
+
+    # Dump databases
+    for database in _getDbs(p):
+        dump = _dump(p, database, dir)
+        print(f"Dumped {database} to {dump}")
+
+
+@cli.command()
+@s3_options
+@dir_options
 def download(endpoint, bucket, key, secret, dir):
     """S3 ➜ local"""
     s3 = S3Config(endpoint_url=endpoint, bucket=bucket, key=key, secret=secret)
+
+    # Download from S3
     err = _download(s3, dir)
     if err:
         print(f"Error uploading to S3: {err}")
@@ -175,14 +111,13 @@ def download(endpoint, bucket, key, secret, dir):
 
 
 @cli.command()
-@click.option("--endpoint", "-e", required=True, help="S3 endpoint URL")
-@click.option("--bucket", "-b", required=True, help="S3 bucket name")
-@click.option("--key", "-k", required=True, help="S3 key id")
-@click.option("--secret", "-s", required=True, help="S3 secret key")
-@click.option("--dir", "-d", required=True, help="Dump directory")
+@s3_options
+@dir_options
 def upload(endpoint, bucket, key, secret, dir):
     """local ➜ S3"""
     s3 = S3Config(endpoint_url=endpoint, bucket=bucket, key=key, secret=secret)
+
+    # Upload to S3
     err = _upload(s3, dir)
     if err:
         print(f"Error uploading to S3: {err}")

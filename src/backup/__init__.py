@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+import logging
 from pathlib import Path
 from psycopg2.extensions import connection
 from typing import Optional
@@ -45,10 +46,24 @@ def _connect(p: PostgresConfig) -> connection:
             port=p.port,
         )
     except Exception as e:
-        print(f"Error connecting to the database: {e}")
+        logging.error(f"Error connecting to the database: {e}")
         raise
 
     return connection
+
+
+def _getDbs(p: PostgresConfig) -> list[str]:
+    """
+    Utiltity function to connect to POstgres and list all databases.
+    """
+
+    # Connect to Postgres
+    c = _connect(p)
+
+    # List databases
+    dbs = _listDbs(c)
+
+    return dbs
 
 
 def _listDbs(c: connection) -> list[str]:
@@ -64,7 +79,7 @@ def _listDbs(c: connection) -> list[str]:
     return db_names
 
 
-def _dump(p: PostgresConfig, database: str, dir: Path) -> Optional[Path]:
+def _dump(p: PostgresConfig, database: str, dir: Path) -> Path:
     """
     Creates a single database dump.
     """
@@ -94,12 +109,11 @@ def _dump(p: PostgresConfig, database: str, dir: Path) -> Optional[Path]:
                 stderr=subprocess.PIPE,
                 check=True,
             )
-        print(f"Successfully created backup: {dump}")
+        logging.info(f"Successfully created backup: {dump}")
         return dump
 
     except subprocess.CalledProcessError as e:
-        print(f"Error dumping database '{database}': {e.stderr}")
-        return None
+        logging.error(f"Error dumping database '{database}': {e.stderr}")
 
 
 def _dumpAll(p: PostgresConfig) -> Path:
@@ -119,7 +133,7 @@ def _dumpAll(p: PostgresConfig) -> Path:
     for db in dbs:
         dumpFile = _dump(p, db, dir)
         if not dumpFile:
-            print("Failed to create database dump.")
+            logging.error("Failed to create database dump.")
             raise
 
     for database in dbs:
@@ -157,11 +171,11 @@ def _upload(
             aws_secret_access_key=s3.secret,
         )
         for dump in dir.glob("*.sql"):
-            print(f"Uploading {dump} to bucket {s3.bucket} as {dump.name}")
+            logging.info(f"Uploading {dump} to bucket {s3.bucket} as {dump.name}")
             client.upload_file(dump, s3.bucket, dump.name)
 
     except Exception as err:
-        print(f"Failed to upload files to S3: {err}")
+       logging.error(f"Failed to upload files to S3: {err}")
 
 
 def _download(
@@ -179,8 +193,8 @@ def _download(
             aws_secret_access_key=s3.secret,
         )
         for obj in client.list_objects_v2(Bucket=s3.bucket).get("Contents", []):
-            print(f"Downloading {obj['Key']} from bucket {s3.bucket}")
+            logging.info(f"Downloading {obj['Key']} from bucket {s3.bucket}")
             client.download_file(s3.bucket, obj["Key"], dir / obj["Key"])
 
     except Exception as err:
-        print(f"Failed to download files from S3: {err}")
+        logging.error(f"Failed to download files from S3: {err}")
