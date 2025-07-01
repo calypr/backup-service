@@ -30,20 +30,21 @@ Data backup and recovery service for the CALYPR systems 🔄
 
 ➜ pip install -e .
 
-➜ backup --help
-Usage: backup [OPTIONS]
+➜ bak --help
+Usage: bak [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  -H, --host TEXT      Postgres host ($PGHOST)
-  -p, --port INTEGER   Postgres port ($PGPORT)
-  -u, --user TEXT      Postgres username ($PGUSER)
-  -P, --password TEXT  Postgres password ($PGPASSWORD)
-  -e, --endpoint TEXT  S3 endpoint URL (e.g. rgw.ohsu.edu)  [required]
-  -b, --bucket TEXT    S3 bucket name (e.g. example-bucket)
-  -k, --key TEXT       S3 key id
-  -s, --secret TEXT    S3 secret key
-  --version            Show the version and exit.
-  --help               Show this message and exit.
+  --version               Show the version and exit.
+  -v, --verbose, --debug  Enable verbose (DEBUG) logging.
+  --help                  Show this message and exit.
+
+Commands:
+  backup    Postgres ➜ S3
+  download  S3 ➜ local
+  dump      Postgres ➜ local
+  ls        List databases
+  restore   S3 ➜ Postgres
+  upload    local ➜ S3
 ```
 
 ## Examples
@@ -65,7 +66,7 @@ Options:
 > 
 > ➜ export PGPASSWORD='example'
 > 
-> ➜ backup --host localhost:5432 --output s3://example-bucket/
+> ➜ backup --host localhost:5432 --bucket s3://example-bucket/
 > ```
 > 
 > </details>

@@ -14,7 +14,7 @@ from .utils import postgres_options, s3_options, dir_options
 import logging
 
 
-@click.group(context_settings=dict(allow_interspersed_args=True))
+@click.group()
 @click.version_option()
 @click.option(
     "--verbose",
@@ -25,14 +25,13 @@ import logging
     help="Enable verbose (DEBUG) logging.",
 )
 def cli(verbose):
-    # Set the default level to INFO
+    # Default logging level is INFO
     level = logging.INFO
 
-    # If the flag is set, change the level to DEBUG
+    # If the flag is provided set logging level to DEBUG
     if verbose:
         level = logging.DEBUG
     
-    # Configure logging once with the determined level
     logging.basicConfig(
         level=level,
         format="%(asctime)s - %(levelname)s - %(message)s",

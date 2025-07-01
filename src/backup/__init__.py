@@ -114,6 +114,7 @@ def _dump(p: PostgresConfig, database: str, dir: Path) -> Path:
 
     except subprocess.CalledProcessError as e:
         logging.error(f"Error dumping database '{database}': {e.stderr}")
+        return Path()
 
 
 def _dumpAll(p: PostgresConfig) -> Path:
