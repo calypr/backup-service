@@ -1,3 +1,11 @@
+# [1.2.0](https://github.com/ACED-IDP/backup-service/compare/v1.1.0...v1.2.0) (2025-07-01)
+
+
+### Features
+
+* add initial logging ([f8c97e9](https://github.com/ACED-IDP/backup-service/commit/f8c97e93bc06ad311ffade16b8d22077db3f2604))
+* update backup functionality ([ac81457](https://github.com/ACED-IDP/backup-service/commit/ac8145758684fe8d25b29d112c8d1c2ff7d86ac4))
+
 # [1.1.0](https://github.com/ACED-IDP/backup-service/compare/v1.0.2...v1.1.0) (2025-06-25)
 
 
