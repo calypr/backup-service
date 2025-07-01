@@ -36,7 +36,8 @@ def testListDbs(testPostgres):
     assert isinstance(dbs, list)
 
 
-@pytest.mark.skip(reason="Updating _dump method...")
+# TODO: Remove skip when _dump is implemented
+@pytest.mark.skip(reason="Implementing _dump method...")
 def testDumpDb(testPostgres, tmp_path):
     """
     Tests creating a dump of a specific database.
@@ -50,7 +51,8 @@ def testDumpDb(testPostgres, tmp_path):
     assert dir.is_dir(), "Dump directory should be created"
 
 
-@pytest.mark.skip(reason="Updating _upload method...")
+# TODO: Remove skip when _restore is implemented
+@pytest.mark.skip(reason="Implementing _upload method...")
 def testUpload(testS3, testDir):
     """
     Tests uploading database dump to S3.
