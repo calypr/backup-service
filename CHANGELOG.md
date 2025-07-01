@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/ACED-IDP/backup-service/compare/v1.2.0...v1.2.1) (2025-07-01)
+
+
+### Bug Fixes
+
+* Update README and backup scripts ([7d08aef](https://github.com/ACED-IDP/backup-service/commit/7d08aef1f7a74e9bd484124f5a1bb9c8b300aba1))
+
 # [1.2.0](https://github.com/ACED-IDP/backup-service/compare/v1.1.0...v1.2.0) (2025-07-01)
 
 
