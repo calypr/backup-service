@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/ACED-IDP/backup-service/compare/v1.3.1...v1.3.2) (2025-07-01)
+
+
+### Bug Fixes
+
+* update upload operation ([8424065](https://github.com/ACED-IDP/backup-service/commit/8424065080caa0c6aa51b1f9e8b29893c76ae978))
+
 ## [1.3.1](https://github.com/ACED-IDP/backup-service/compare/v1.3.0...v1.3.1) (2025-07-01)
 
 
