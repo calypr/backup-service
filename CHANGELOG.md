@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/ACED-IDP/backup-service/compare/v1.3.0...v1.3.1) (2025-07-01)
+
+
+### Bug Fixes
+
+* update example notebook ([d45ebd1](https://github.com/ACED-IDP/backup-service/commit/d45ebd105fad15877be4e7dc380e853519d8b5a7))
+
 # [1.3.0](https://github.com/ACED-IDP/backup-service/compare/v1.2.2...v1.3.0) (2025-07-01)
 
 
