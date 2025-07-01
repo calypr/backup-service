@@ -2,4 +2,8 @@ pytest
 psycopg2
 boto3
 click
+
+# Development dependencies
+# TODO: Move to separate file (e.g. dev-requirements.txt)
 testcontainers
+minio

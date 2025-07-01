@@ -23,7 +23,7 @@ class PostgresConfig:
 class S3Config:
     """S3 config"""
 
-    endpoint_url: str
+    endpoint: str
     bucket: str
     key: str
     secret: str
@@ -97,8 +97,15 @@ def _dump(p: PostgresConfig, database: str, dir: Path) -> Path:
         "--no-password",
     ]
 
+    # Shared timestamp for all dumps
+    timestamp = datetime.now().isoformat()
+
+    # Dump directory
+    out = dir / Path(timestamp)
+    out.mkdir(parents=True, exist_ok=True)
+
     # Dump File
-    dump = Path(f"{dir}/{database}.sql")
+    dump = Path(f"{out}/{database}.sql")
 
     try:
         # We open the output file and direct the command's stdout to it.
@@ -109,7 +116,6 @@ def _dump(p: PostgresConfig, database: str, dir: Path) -> Path:
                 stderr=subprocess.PIPE,
                 check=True,
             )
-        logging.info(f"Successfully created backup: {dump}")
         return dump
 
     except subprocess.CalledProcessError as e:
@@ -117,42 +123,9 @@ def _dump(p: PostgresConfig, database: str, dir: Path) -> Path:
         return Path()
 
 
-def _dumpAll(p: PostgresConfig) -> Path:
-    """
-    Dumps all databases from a Postgres instance to a specified directory.
-    """
-
-    dbs = _listDbs(_connect(p))
-
-    # Shared timestamp for all dumps
-    timestamp = datetime.now().isoformat()
-
-    # Dump directory
-    dir = Path("backups") / timestamp
-    dir.mkdir(parents=True, exist_ok=True)
-
-    for db in dbs:
-        dumpFile = _dump(p, db, dir)
-        if not dumpFile:
-            logging.error("Failed to create database dump.")
-            raise
-
-    for database in dbs:
-        _dump(p, database, dir)
-
-    return dir
-
-
-def _restore(p: PostgresConfig, database: str, dir: Path) -> Optional[Path]:
+def _restore(p: PostgresConfig, database: str, dir: Path) -> Path | None:
     """
     Restores a single database from a dump file.
-    """
-    pass
-
-
-def _restoreAll(p: PostgresConfig, dbs: list[str]) -> Optional[Path]:
-    """
-    Restores all databases from a specified directory.
     """
     pass
 
@@ -160,23 +133,29 @@ def _restoreAll(p: PostgresConfig, dbs: list[str]) -> Optional[Path]:
 def _upload(
     s3: S3Config,
     dir: Path,
-):
+) -> Exception | None:
     """
     Uploads a file to S3 (MinIO/Ceph compatible).
     """
+
+    client = boto3.client(
+        "s3",
+        endpoint_url=s3.endpoint,
+        aws_access_key_id=s3.key,
+        aws_secret_access_key=s3.secret,
+    )
+
     try:
-        client = boto3.client(
-            "s3",
-            endpoint_url=s3.endpoint_url,
-            aws_access_key_id=s3.key,
-            aws_secret_access_key=s3.secret,
-        )
+        logging.debug(f"dir: {dir}, type: {type(dir)}")
         for dump in dir.glob("*.sql"):
-            logging.info(f"Uploading {dump} to bucket {s3.bucket} as {dump.name}")
+            logging.debug(f"Uploading {dump} to bucket {s3.bucket} as {dump.name}")
             client.upload_file(dump, s3.bucket, dump.name)
 
     except Exception as err:
-       logging.error(f"Failed to upload files to S3: {err}")
+        logging.error(f"Failed to upload files to S3: {err}")
+        return err
+
+    return None
 
 
 def _download(
@@ -189,12 +168,12 @@ def _download(
     try:
         client = boto3.client(
             "s3",
-            endpoint_url=s3.endpoint_url,
+            endpoint_url=s3.endpoint,
             aws_access_key_id=s3.key,
             aws_secret_access_key=s3.secret,
         )
         for obj in client.list_objects_v2(Bucket=s3.bucket).get("Contents", []):
-            logging.info(f"Downloading {obj['Key']} from bucket {s3.bucket}")
+            logging.debug(f"Downloading {obj['Key']} from bucket {s3.bucket}")
             client.download_file(s3.bucket, obj["Key"], dir / obj["Key"])
 
     except Exception as err:

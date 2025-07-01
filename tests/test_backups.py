@@ -38,21 +38,19 @@ def testListDbs(testPostgres):
 
 # TODO: Remove skip when _dump is implemented
 @pytest.mark.skip(reason="Implementing _dump method...")
-def testDumpDb(testPostgres, tmp_path):
+def testDump(testPostgres, tmp_path):
     """
     Tests creating a dump of a specific database.
     """
 
     connection = _connect(testPostgres)
     dbs = _listDbs(connection)
-    dir = _dump(testPostgres, 'postgres', tmp_path)
+    dir = _dump(testPostgres, "postgres", tmp_path)
 
     # TODO: Improve test
     assert dir.is_dir(), "Dump directory should be created"
 
 
-# TODO: Remove skip when _restore is implemented
-@pytest.mark.skip(reason="Implementing _upload method...")
 def testUpload(testS3, testDir):
     """
     Tests uploading database dump to S3.
@@ -62,4 +60,25 @@ def testUpload(testS3, testDir):
     err = _upload(testS3, testDir)
 
     # TODO: Improve test
-    assert err is None, "Upload should not return an error"
+    assert err is None, "Error uploading to S3"
+
+
+def testDownload(testS3, tmp_path):
+    """
+    Tests downloading database dump from S3.
+    """
+    pass
+
+
+def testRestore(testPostgres, tmp_path):
+    """
+    Tests restoring a database from a dump.
+    """
+    pass
+
+
+def testGetDbs(testPostgres):
+    """
+    Tests retrieving the names of all databases in the PostgreSQL server.
+    """
+    pass

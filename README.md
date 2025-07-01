@@ -6,16 +6,12 @@
 
 [license-badge]: https://img.shields.io/badge/License-Apache-blue.svg
 [license]: https://opensource.org/license/apache-2-0
-
 [release-badge]: https://img.shields.io/github/v/release/ACED-IDP/backup-service
 [release]: https://github.com/ACED-IDP/backup-service/releases
-
 [docker-badge]: https://img.shields.io/badge/Docker%20Repo-Quay.io-blue?logo=docker
 [docker]: https://quay.io/repository/ohsu-comp-bio/backup-service?tab=tags&tag=latest
-
 [helm-badge]: https://img.shields.io/badge/Helm-0F1689?logo=helm&logoColor=fff
 [helm]: https://github.com/ohsu-comp-bio/helm-charts/tree/main/charts/backups
-
 [tests-badge]: https://img.shields.io/github/actions/workflow/status/aced-idp/backup-service/tests.yaml?label=tests
 [tests]: https://github.com/ACED-IDP/backup-service/actions/workflows/tests.yaml
 
@@ -49,26 +45,35 @@ Commands:
 
 ## Examples
 
+| Example            | Notebook                               |
+| ------------------ | -------------------------------------- |
+| [Example][example] | [![Open in Colab][colab-badge]][colab] |
+
+[example]: https://github.com/ga4gh/task-execution-schemas/releases/tag/v1.1
+[colab-badge]: https://colab.research.google.com/assets/colab-badge.svg
+[colab]: https://colab.research.google.com/github/ACED-IDP/backup-service/blob/main/examples/example.ipynb
+
 > [!TIP]
+>
 > <details>
 > <summary>Remote K8s Postgres to S3</summary>
-> 
+>
 > ```sh
 > ➜ kubectl config current-context
 > kind-dev
-> 
+>
 > ➜ kubectl get svc | grep postgresql
 > local-postgresql
-> 
+>
 > ➜ kubectl port-forward service/local-postgresql 5432:5432
 > Forwarding from 127.0.0.1:5432 -> 5432
 > Forwarding from [::1]:5432 -> 5432
-> 
+>
 > ➜ export PGPASSWORD='example'
-> 
+>
 > ➜ backup --host localhost:5432 --bucket s3://example-bucket/
 > ```
-> 
+>
 > </details>
 
 # 3. Architecture 🛠️
