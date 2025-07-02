@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/ACED-IDP/backup-service/compare/v1.3.2...v1.4.0) (2025-07-02)
+
+
+### Features
+
+* add initial restore functionality ([4fbf878](https://github.com/ACED-IDP/backup-service/commit/4fbf878a478a68507e7f71d9b9be7137a7ee7fbb))
+
 ## [1.3.2](https://github.com/ACED-IDP/backup-service/compare/v1.3.1...v1.3.2) (2025-07-01)
 
 
