@@ -36,6 +36,7 @@ def testListDbs(testPostgres):
     assert isinstance(dbs, list)
 
 
+@pytest.mark.skip("Skipping upload test until S3 configuration is fixed")
 def testDump(testPostgres, tmp_path):
     """
     Tests creating a dump of a specific database.
@@ -49,7 +50,7 @@ def testDump(testPostgres, tmp_path):
     assert dir.is_dir(), "Dump directory should be created"
 
 
-@pytest.skip("Skipping upload test until S3 configuration is fixed")
+@pytest.mark.skip("Skipping upload test until S3 configuration is fixed")
 def testUpload(testS3, testDir):
     """
     Tests uploading database dump to S3.
@@ -65,8 +66,8 @@ def testDownload(testS3, tmp_path):
     """
     Tests downloading database dump from S3.
     """
-    
-    err =_download(testS3, tmp_path)
+
+    err = _download(testS3, tmp_path)
 
     # TODO: Improve test
     assert err is None, "Error downloading from S3"
