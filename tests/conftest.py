@@ -47,7 +47,7 @@ def testS3():
 
         key = m.access_key
         secret = m.secret_key
-        endpoint = f"http://{host}:{port}"
+        endpoint = f"{host}:{port}"
         logging.debug(f"MinIO ready at {endpoint}")
 
         # MinIO client
@@ -60,9 +60,7 @@ def testS3():
         client.make_bucket(bucket)
         logging.debug(f"Created bucket: {bucket}")
 
-        yield S3Config(
-            endpoint=f"http://{host}:{port}", bucket=bucket, key=key, secret=secret
-        )
+        yield S3Config(endpoint=f"{host}:{port}", bucket=bucket, key=key, secret=secret)
 
 
 @pytest.fixture(scope="session")

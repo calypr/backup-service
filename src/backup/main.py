@@ -110,11 +110,7 @@ def download(endpoint: str, bucket: str, key: str, secret: str, dir: Path):
     s3 = S3Config(endpoint=endpoint, bucket=bucket, key=key, secret=secret)
 
     # Download from S3
-    err = _download(s3, dir)
-    if err:
-        logging.debug(f"Error uploading to S3: {err}")
-    else:
-        logging.debug("Upload OK")
+    _ = _download(s3, dir)
 
 
 @cli.command()
@@ -123,8 +119,6 @@ def download(endpoint: str, bucket: str, key: str, secret: str, dir: Path):
 def upload(endpoint: str, bucket: str, key: str, secret: str, dir: Path):
     """local ➜ S3"""
     s3 = S3Config(endpoint=endpoint, bucket=bucket, key=key, secret=secret)
-
-    dir = Path(dir).resolve()
 
     # Upload to S3
     _ = _upload(s3, dir)

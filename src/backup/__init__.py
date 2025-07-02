@@ -2,9 +2,10 @@ from dataclasses import dataclass
 from datetime import datetime
 import logging
 from pathlib import Path
+from minio import Minio
 from psycopg2.extensions import connection
-from typing import Optional
 import boto3
+from boto3.session import Config
 import psycopg2
 import subprocess
 
@@ -54,7 +55,7 @@ def _connect(p: PostgresConfig) -> connection:
 
 def _getDbs(p: PostgresConfig) -> list[str]:
     """
-    Utiltity function to connect to POstgres and list all databases.
+    Utiltity function to connect to Postgres and list all databases.
     """
 
     # Connect to Postgres
@@ -109,6 +110,8 @@ def _dump(p: PostgresConfig, database: str, dir: Path) -> Path:
 
     try:
         # We open the output file and direct the command's stdout to it.
+        logging.debug(f"Dumping database '{database}' to '{dump}'")
+        logging.debug(f"Command: {' '.join(command)}")
         with open(dump, "wb") as out:
             _ = subprocess.run(
                 command,
@@ -127,7 +130,51 @@ def _restore(p: PostgresConfig, database: str, dir: Path) -> Path | None:
     """
     Restores a single database from a dump file.
     """
-    pass
+    dump = dir / Path(f"{database}.sql")
+
+    if not dump.exists():
+        logging.error(f"Dump file {dump} does not exist")
+        return None
+
+    command = [
+        "pg_restore",
+        "-U",
+        p.user,
+        "-h",
+        p.host,
+        "-p",
+        str(p.port),
+        "-d",
+        database,
+        "--no-password",
+        dump.as_posix(),
+    ]
+
+    try:
+        logging.debug(f"Restoring database '{database}' from dump '{dump}'")
+        logging.debug(f"Command: {' '.join(command)}")
+        _ = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+        return dump
+
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error restoring database '{database}': {e.stderr}")
+        return None
+
+
+def _getS3Client(s3: S3Config):
+    """
+    Returns a MinIO client configured with the provided S3 configuration.
+    """
+    return Minio(
+        f"{s3.endpoint}",
+        access_key=s3.key,
+        secret_key=s3.secret,
+    )
 
 
 def _upload(
@@ -138,18 +185,20 @@ def _upload(
     Uploads a file to S3 (MinIO/Ceph compatible).
     """
 
-    client = boto3.client(
-        "s3",
-        endpoint_url=s3.endpoint,
-        aws_access_key_id=s3.key,
-        aws_secret_access_key=s3.secret,
-    )
+    client = _getS3Client(s3)
 
     try:
         logging.debug(f"dir: {dir}, type: {type(dir)}")
+
+        # TODO: Review if this selection/filter of files is acceptable
         for dump in dir.glob("*.sql"):
-            logging.debug(f"Uploading {dump} to bucket {s3.bucket} as {dump.name}")
-            client.upload_file(dump, s3.bucket, dump.name)
+            logging.debug(f"Uploading {dump} to bucket {s3.bucket} as {dump.as_posix}")
+
+            client.fput_object(
+                bucket_name=s3.bucket,
+                object_name=dump.as_posix(),
+                file_path=dump.as_posix(),
+            )
 
     except Exception as err:
         logging.error(f"Failed to upload files to S3: {err}")
@@ -161,20 +210,32 @@ def _upload(
 def _download(
     s3: S3Config,
     dir: Path,
-):
+) -> Exception | None:
     """
     Downloads a file from S3 (MinIO/Ceph compatible).
     """
+
+    client = _getS3Client(s3)
+
     try:
-        client = boto3.client(
-            "s3",
-            endpoint_url=s3.endpoint,
-            aws_access_key_id=s3.key,
-            aws_secret_access_key=s3.secret,
-        )
-        for obj in client.list_objects_v2(Bucket=s3.bucket).get("Contents", []):
-            logging.debug(f"Downloading {obj['Key']} from bucket {s3.bucket}")
-            client.download_file(s3.bucket, obj["Key"], dir / obj["Key"])
+        for obj in client.list_objects(s3.bucket, recursive=True):
+            name = obj.object_name
+            logging.debug(f"obj: {obj}")
+
+            if name is None:
+                continue
+
+            path = (dir / name).as_posix()
+
+            logging.debug(f"Downloading {name} from bucket {s3.bucket} to {path}")
+            _ = client.fget_object(
+                bucket_name=s3.bucket,
+                object_name=name,
+                file_path=path,
+            )
 
     except Exception as err:
         logging.error(f"Failed to download files from S3: {err}")
+        return err
+
+    return None
