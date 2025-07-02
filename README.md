@@ -115,14 +115,7 @@ sequenceDiagram
 
 ## User Story
 
-Here's an updated "Design" section for your README.md, structured similarly to the GitHub issue you provided as an example:
-
-3. Design 📐
-
-User Story
-
 As a data manager, I want to reliably back up PostgreSQL databases to S3-compatible storage and restore them when needed, ensuring data integrity and availability across different environments (local, cloud, or hybrid S3-compatible endpoints like MinIO or Ceph). This service should be easy to configure and automate.
-
 
 ### Acceptance Criteria + Testing
 
