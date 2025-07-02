@@ -111,7 +111,97 @@ sequenceDiagram
 [indexd]: https://github.com/uc-cdis/indexd
 [requestor]: https://github.com/uc-cdis/requestor
 
-# 3. Additional Resources 📚
+# 3. Design 📐
+
+## User Story
+
+Here's an updated "Design" section for your README.md, structured similarly to the GitHub issue you provided as an example:
+
+3. Design 📐
+
+User Story
+
+As a data manager, I want to reliably back up PostgreSQL databases to S3-compatible storage and restore them when needed, ensuring data integrity and availability across different environments (local, cloud, or hybrid S3-compatible endpoints like MinIO or Ceph). This service should be easy to configure and automate.
+
+
+### Acceptance Criteria + Testing
+
+#### Database Dump:
+
+- [ ] The service can connect to a PostgreSQL instance using provided credentials.
+- [ ] It can list all non-template databases within the PostgreSQL instance.
+- [ ] It can successfully create a compressed dump (`.sql` file) for each specified database into a local directory.
+- [ ] Each dump file is named appropriately, incorporating a timestamp for unique identification.
+- [ ] Error handling is in place for failed database connections or dump operations.
+
+```sh
+# Ensure PGPASSWORD environment variable is set or password is provided securely
+# Example for a local Postgres and MinIO/Ceph
+export PGPASSWORD='your_postgres_password'
+
+bak backup \
+  --host localhost \
+  --port 5432 \
+  --user postgres \
+  --password "$PGPASSWORD" \
+  --dir /tmp/db_dumps \
+  --endpoint https://aced-storage.ohsu.edu \
+  --bucket backup-tests \
+  --key your_s3_access_key \
+  --secret your_s3_secret_key
+```
+
+#### S3 Upload:
+
+- [ ] The service can connect to an S3-compatible endpoint (e.g., MinIO, Ceph, AWS S3) using provided credentials and endpoint URL.
+- [ ] It can successfully upload the generated database dump files to the specified S3 bucket.
+- [ ] The upload operation handles files of various sizes.
+- [ ] The upload mechanism is configured to avoid common S3-compatibility issues, such as checksum mismatches, when interacting with non-AWS S3 targets by disabling client-side checksum generation where possible.
+- [ ] Error handling is in place for failed S3 connection or upload operations.
+
+```sh
+bak upload \
+  --dir /path/to/local/dumps \
+  --endpoint https://aced-storage.ohsu.edu \
+  --bucket backup-tests \
+  --key your_s3_access_key \
+  --secret your_s3_secret_key
+```
+
+#### S3 Download:
+
+- [ ] The service can connect to the S3-compatible endpoint and list objects within the specified bucket.
+- [ ] It can successfully download objects (database dumps) from the S3 bucket to a local directory.
+- [ ] Error handling is in place for failed S3 connection or download operations.
+
+```sh
+bak download \
+  --dir /tmp/downloaded_dumps \
+  --endpoint https://aced-storage.ohsu.edu \
+  --bucket backup-tests \
+  --key your_s3_access_key \
+  --secret your_s3_secret_key
+```
+
+#### Database Restore:
+
+- [ ] The service can successfully restore a database from a locally available dump file using `pg_restore`.
+- [ ] The restore operation can target an existing database.
+- [ ] Error handling is in place for failed restore operations.
+
+```sh
+# Assuming /tmp/downloaded_dumps/your_database.sql exists
+export PGPASSWORD='your_postgres_password'
+
+bak restore \
+  --host localhost \
+  --port 5432 \
+  --user postgres \
+  --password "$PGPASSWORD" \
+  --dir /tmp/downloaded_dumps # The directory where the dump file is
+```
+
+# 4. Additional Resources 📚
 
 - [Gen3 Graph Data Flow](https://docs.gen3.org/gen3-resources/developer-guide/architecture/#gen3-graph-data-flow)
 
