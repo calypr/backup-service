@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/ACED-IDP/backup-service/compare/v1.4.1...v1.5.0) (2025-07-08)
+
+
+### Features
+
+* add initial ElasticSearch module ([1cf6e2e](https://github.com/ACED-IDP/backup-service/commit/1cf6e2e89702cab042315d2e7ff3dd73d03c27c0))
+
 ## [1.4.1](https://github.com/ACED-IDP/backup-service/compare/v1.4.0...v1.4.1) (2025-07-02)
 
 
