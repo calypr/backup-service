@@ -1,19 +1,29 @@
-from pathlib import Path
-import click
-from backup import (
+from backup.elasticsearch import (
+    ElasticSearchConfig,
+    _getIndices,
+    _dump as _esDump,
+    _restore as _esRestore,
+)
+from backup.postgres import (
     PostgresConfig,
+    _getDbs,
+    _dump as _pgDump,
+    _restore as _pgRestore,
+)
+from backup.s3 import (
     S3Config,
     _download,
-    _dump,
-    _getDbs,
-    _restore,
     _upload,
 )
-from .utils import postgres_options, s3_options, dir_options
+from backup.utils import postgres_options, s3_options, dir_options
+import click
+from click_aliases import ClickAliasedGroup
+from datetime import datetime
 import logging
+from pathlib import Path
 
 
-@click.group()
+@click.group(cls=ClickAliasedGroup)
 @click.version_option()
 @click.option(
     "--verbose",
@@ -37,7 +47,17 @@ def cli(verbose: bool):
     )
 
 
-@cli.command()
+if __name__ == "__main__":
+    cli()
+
+
+@cli.group(aliases=['pg'])
+def postgres():
+    """Commands for Postgres backups."""
+    pass
+
+
+@postgres.command()
 @postgres_options
 @s3_options
 def backup(
@@ -58,51 +78,77 @@ def backup(
     # List databases
     dbs = _getDbs(p)
 
+    if not dbs:
+        logging.warning("No databases found to backup.")
+        return
+
     # Dump databases
     for database in dbs:
-        _ = _dump(p, database, dir)
+        _ = _pgDump(p, database, dir)
 
     # Upload dumps to S3
     _ = _upload(s3, dir)
 
 
-@cli.command()
+@postgres.command()
 @postgres_options
 @dir_options
 def restore(host: str, port: int, user: str, password: str, dir: Path):
-    """S3 ➜ Postgres"""
+    """Local ➜ Postgres"""
     p = PostgresConfig(host=host, port=port, user=user, password=password)
 
+    dbs = _getDbs(p)
+    if not dbs:
+        logging.warning("No databases found to restore.")
+        return
+
     # Restore databases
-    for database in _getDbs(p):
-        _ = _restore(p, database, dir)
+    for database in dbs:
+        _ = _pgRestore(p, database, dir)
 
 
-@cli.command(name="ls")
+@postgres.command(name="ls")
 @postgres_options
 def listDbs(host: str, port: int, user: str, password: str):
     """List databases"""
     p = PostgresConfig(host=host, port=port, user=user, password=password)
 
+    dbs = _getDbs(p)
+    if not dbs:
+        logging.warning("No databases found.")
+        return
+
     # List databases
-    for database in _getDbs(p):
+    for database in dbs:
         click.echo(database)
 
 
-@cli.command()
+@postgres.command()
 @postgres_options
 @dir_options
 def dump(host: str, port: int, user: str, password: str, dir: Path):
     """Postgres ➜ local"""
     p = PostgresConfig(host=host, port=port, user=user, password=password)
 
+    # Shared timestamp for all dumps
+    timestamp = datetime.now().isoformat()
+
+    # Dump directory
+    out = dir / Path(timestamp)
+    out.mkdir(parents=True, exist_ok=True)
+
+    dbs = _getDbs(p)
+    if not dbs:
+        logging.warning("No databases found to dump.")
+        return
+
     # Dump databases
-    for database in _getDbs(p):
-        dump = _dump(p, database, dir)
+    for database in dbs:
+        dump = _pgDump(p, database, out)
         logging.debug(f"Dumped {database} to {dump}")
 
 
-@cli.command()
+@postgres.command()
 @s3_options
 @dir_options
 def download(endpoint: str, bucket: str, key: str, secret: str, dir: Path):
@@ -113,7 +159,7 @@ def download(endpoint: str, bucket: str, key: str, secret: str, dir: Path):
     _ = _download(s3, dir)
 
 
-@cli.command()
+@postgres.command()
 @s3_options
 @dir_options
 def upload(endpoint: str, bucket: str, key: str, secret: str, dir: Path):
@@ -124,5 +170,7 @@ def upload(endpoint: str, bucket: str, key: str, secret: str, dir: Path):
     _ = _upload(s3, dir)
 
 
-if __name__ == "__main__":
-    cli()
+@cli.group(aliases=['es'])
+def elasticsearch():
+    """Commands for ElasticSearch backups."""
+    pass

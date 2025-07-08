@@ -1,5 +1,5 @@
 import pytest
-from backup import (
+from backup.postgres import (
     PostgresConfig,
     S3Config,
     _connect,

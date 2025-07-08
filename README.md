@@ -194,7 +194,11 @@ bak restore \
   --dir /tmp/downloaded_dumps # The directory where the dump file is
 ```
 
-# 4. Additional Resources 📚
+# 4. Alternatives 📖
+
+- [velero](https://velero.io)
+
+# 5. Additional Resources 📚
 
 - [Gen3 Graph Data Flow](https://docs.gen3.org/gen3-resources/developer-guide/architecture/#gen3-graph-data-flow)
 

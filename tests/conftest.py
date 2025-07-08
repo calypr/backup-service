@@ -1,10 +1,11 @@
-import logging
-from pathlib import Path
-from testcontainers.postgres import PostgresContainer
-from testcontainers.minio import MinioContainer
+from backup.postgres import PostgresConfig
+from backup.s3 import S3Config
 from minio import Minio
+from pathlib import Path
+from testcontainers.minio import MinioContainer
+from testcontainers.postgres import PostgresContainer
+import logging
 import pytest
-from backup import PostgresConfig, S3Config
 
 
 @pytest.fixture(scope="session")
