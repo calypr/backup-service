@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/ACED-IDP/backup-service/compare/v1.5.0...v1.6.0) (2025-07-09)
+
+
+### Features
+
+* Add entrypoint script for backup process ([a6cb424](https://github.com/ACED-IDP/backup-service/commit/a6cb4247561b6bb411849a40689aa9fc6475a289))
+
 # [1.5.0](https://github.com/ACED-IDP/backup-service/compare/v1.4.1...v1.5.0) (2025-07-08)
 
 
