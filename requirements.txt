@@ -1,9 +1,11 @@
-pytest
-psycopg2
-boto3
 click
+click-aliases
+elasticsearch
+minio
+psycopg2-binary
+pytest
 
 # Development dependencies
 # TODO: Move to separate file (e.g. dev-requirements.txt)
 testcontainers
-minio
+

@@ -2,6 +2,8 @@ from dataclasses import dataclass
 import logging
 from pathlib import Path
 from minio import Minio
+from minio.credentials.providers import EnvAWSProvider
+
 
 @dataclass
 class S3Config:
@@ -21,6 +23,7 @@ def _getS3Client(s3: S3Config):
         f"{s3.endpoint}",
         access_key=s3.key,
         secret_key=s3.secret,
+        credentials=EnvAWSProvider(),
     )
 
 
@@ -38,8 +41,15 @@ def _upload(
         logging.debug(f"dir: {dir}, type: {type(dir)}")
 
         # TODO: Review if this selection/filter of files is acceptable
-        for dump in dir.glob("*.sql"):
-            logging.debug(f"Uploading {dump} to bucket {s3.bucket} as {dump.as_posix}")
+        for dump in dir.rglob("*"):
+
+            # Skip directories and non-files
+            if not dump.is_file():
+                continue
+
+            logging.debug(
+                f"Uploading {dump} to {s3.endpoint}/{s3.bucket}/{dump.as_posix()}"
+            )
 
             client.fput_object(
                 bucket_name=s3.bucket,
