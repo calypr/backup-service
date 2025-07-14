@@ -2,6 +2,7 @@ FROM python:slim
 
 WORKDIR /app
 
+
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
@@ -15,5 +16,7 @@ RUN mkdir -p /backups
 
 COPY entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
+
+RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client
 
 ENTRYPOINT ["./entrypoint.sh"]

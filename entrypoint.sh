@@ -7,15 +7,17 @@ echo "Backup started at $(date)"
 echo "Running Postgres dump..."
 bak --debug pg dump \
     --host "${PGHOST}" \
-    --port "${PGPORT}" \
     --user "${PGUSER}" \
-    --dir "/backups"
+    --password "${PGPASSWORD}" \
+    --dir "${DIR}"
 
 # S3 Upload
 echo "Running S3 upload..."
-bak --debug s3 upload \
-    --dir "/backups" \
+bak --debug pg upload \
+    --dir "${DIR}" \
     --bucket "${BUCKET}" \
-    --endpoint "${ENDPOINT}"
+    --endpoint "${ENDPOINT}" \
+    --key "${KEY}" \
+    --secret "${SECRET}"
 
 echo "Backup completed at $(date)"

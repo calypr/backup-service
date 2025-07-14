@@ -1,16 +1,21 @@
 import pytest
+from backup.elasticsearch import (
+    ElasticSearchConfig,
+    _getIndices,
+    _dump as _esDump,
+    _restore as _esRestore,
+)
 from backup.postgres import (
     PostgresConfig,
-    S3Config,
-    _connect,
-    _download,
-    _dump,
     _getDbs,
-    _listDbs,
-    _restore,
+    _dump as _pgDump,
+    _restore as _pgRestore,
+)
+from backup.s3 import (
+    S3Config,
+    _download,
     _upload,
 )
-from pathlib import Path
 
 
 def testConnect(testPostgres):
@@ -36,7 +41,6 @@ def testListDbs(testPostgres):
     assert isinstance(dbs, list)
 
 
-@pytest.mark.skip("Skipping upload test until S3 configuration is fixed")
 def testDump(testPostgres, tmp_path):
     """
     Tests creating a dump of a specific database.
@@ -50,7 +54,6 @@ def testDump(testPostgres, tmp_path):
     assert dir.is_dir(), "Dump directory should be created"
 
 
-@pytest.mark.skip("Skipping upload test until S3 configuration is fixed")
 def testUpload(testS3, testDir):
     """
     Tests uploading database dump to S3.

@@ -4,6 +4,13 @@ from backup.elasticsearch import (
     _dump as _esDump,
     _restore as _esRestore,
 )
+from backup.grip import (
+    GripConfig,
+    _getEdges,
+    _getVertices,
+    _dump as _gripDump,
+    _restore as _gripRestore,
+)
 from backup.postgres import (
     PostgresConfig,
     _getDbs,
