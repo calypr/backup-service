@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/ACED-IDP/backup-service/compare/v1.6.0...v1.7.0) (2025-07-14)
+
+
+### Features
+
+* update module imports ([ac575ae](https://github.com/ACED-IDP/backup-service/commit/ac575ae3359994209a846ad789400db5b0542ca5))
+
 # [1.6.0](https://github.com/ACED-IDP/backup-service/compare/v1.5.0...v1.6.0) (2025-07-09)
 
 
