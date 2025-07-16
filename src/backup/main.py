@@ -22,12 +22,19 @@ from backup.s3 import (
     _download,
     _upload,
 )
-from backup.utils import postgres_options, s3_options, dir_options
-import click
+from backup.options import (
+    dir_options,
+    elasticsearch_options,
+    postgres_options,
+    s3_options,
+)
 from click_aliases import ClickAliasedGroup
 from datetime import datetime
-import logging
+from elasticsearch.exceptions import ElasticsearchWarning
 from pathlib import Path
+import click
+import logging
+import warnings
 
 
 @click.group(cls=ClickAliasedGroup)
@@ -38,7 +45,7 @@ from pathlib import Path
     "--debug",
     is_flag=True,
     default=False,
-    help="Enable verbose (DEBUG) logging.",
+    help="Enable debug logging.",
 )
 def cli(verbose: bool):
     # Default logging level is INFO
@@ -53,76 +60,82 @@ def cli(verbose: bool):
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
 
+    # Avoid INFO and ElasticsearchWarning logging from the elasticsearch logger
+    logging.getLogger('elastic_transport.transport').setLevel(logging.CRITICAL)
+    warnings.simplefilter('ignore', ElasticsearchWarning)
+
 
 if __name__ == "__main__":
     cli()
 
 
-@cli.group(aliases=['pg'])
+@cli.group(aliases=["es"])
+def elasticsearch():
+    """Commands for ElasticSearch backups."""
+    pass
+
+
+@elasticsearch.command(name="ls")
+@elasticsearch_options
+def listIndices(host: str, port: int, user: str, password: str):
+    """list indices"""
+    esConfig = ElasticSearchConfig(host=host, port=port, user=user, password=password)
+
+    indices = _getIndices(esConfig)
+    if not indices:
+        logging.warning(f"No indices found at {esConfig.host}:{esConfig.port}")
+        return
+
+    # List indices
+    for index in indices:
+        click.echo(index)
+
+
+@elasticsearch.command(name="backup")
+@elasticsearch_options
+@dir_options
+def backup_elasticsearch(host: str, port: int, user: str, password: str, dir: Path):
+    """elasticsearch ➜ local"""
+
+    esConfig = ElasticSearchConfig(host=host, port=port, user=user, password=password)
+    indices = _getIndices(esConfig)
+    if not indices:
+        logging.warning(f"No indices found at {esConfig.host}:{esConfig.port}")
+        return
+
+
+@elasticsearch.command(name="restore")
+@elasticsearch_options
+@dir_options
+def restore_elasticsearch(host: str, port: int, user: str, password: str, snapshot: str):
+    """local ➜ elasticsearch"""
+    esConfig = ElasticSearchConfig(host=host, port=port, user=user, password=password)
+
+    indices = _getIndices(esConfig)
+    if not indices:
+        logging.warning(f"No indices found to restore at {esConfig.host}:{esConfig.port}.")
+        return
+
+    # Restore indices
+    for index in indices:
+        _ = _esRestore(esConfig, index, snapshot)
+
+
+@cli.group(aliases=["pg"])
 def postgres():
     """Commands for Postgres backups."""
     pass
 
 
-@postgres.command()
-@postgres_options
-@s3_options
-def backup(
-    host: str,
-    port: int,
-    user: str,
-    password: str,
-    endpoint: str,
-    dir: Path,
-    bucket: str,
-    key: str,
-    secret: str,
-):
-    """Postgres ➜ S3"""
-    p = PostgresConfig(host=host, port=port, user=user, password=password)
-    s3 = S3Config(endpoint=endpoint, bucket=bucket, key=key, secret=secret)
-
-    # List databases
-    dbs = _getDbs(p)
-
-    if not dbs:
-        logging.warning("No databases found to backup.")
-        return
-
-    # Dump databases
-    for database in dbs:
-        _ = _pgDump(p, database, dir)
-
-    # Upload dumps to S3
-    _ = _upload(s3, dir)
-
-
-@postgres.command()
-@postgres_options
-@dir_options
-def restore(host: str, port: int, user: str, password: str, dir: Path):
-    """Local ➜ Postgres"""
-    p = PostgresConfig(host=host, port=port, user=user, password=password)
-
-    dbs = _getDbs(p)
-    if not dbs:
-        logging.warning("No databases found to restore.")
-        return
-
-    # Restore databases
-    for database in dbs:
-        _ = _pgRestore(p, database, dir)
-
-
 @postgres.command(name="ls")
 @postgres_options
 def listDbs(host: str, port: int, user: str, password: str):
-    """List databases"""
+    """list databases"""
     p = PostgresConfig(host=host, port=port, user=user, password=password)
 
     dbs = _getDbs(p)
     if not dbs:
-        logging.warning("No databases found.")
+        logging.warning(f"No databases found at {p.host}:{p.port}.")
         return
 
     # List databases
@@ -130,11 +143,11 @@ def listDbs(host: str, port: int, user: str, password: str):
         click.echo(database)
 
 
-@postgres.command()
+@postgres.command(name="dump")
 @postgres_options
 @dir_options
-def dump(host: str, port: int, user: str, password: str, dir: Path):
-    """Postgres ➜ local"""
+def dump_postgres(host: str, port: int, user: str, password: str, dir: Path):
+    """postgres ➜ local"""
     p = PostgresConfig(host=host, port=port, user=user, password=password)
 
     # Shared timestamp for all dumps
@@ -146,7 +159,7 @@ def dump(host: str, port: int, user: str, password: str, dir: Path):
 
     dbs = _getDbs(p)
     if not dbs:
-        logging.warning("No databases found to dump.")
+        logging.warning(f"No databases found to dump at {p.host}:{p.port}.")
         return
 
     # Dump databases
@@ -155,29 +168,46 @@ def dump(host: str, port: int, user: str, password: str, dir: Path):
         logging.debug(f"Dumped {database} to {dump}")
 
 
-@postgres.command()
+@postgres.command(name="restore")
+@postgres_options
+@dir_options
+def restore_postgres(host: str, port: int, user: str, password: str, dir: Path):
+    """local ➜ postgres"""
+    p = PostgresConfig(host=host, port=port, user=user, password=password)
+
+    dbs = _getDbs(p)
+    if not dbs:
+        logging.warning(f"No databases found to restore at {p.host}:{p.port}.")
+        return
+
+    # Restore databases
+    for database in dbs:
+        _ = _pgRestore(p, database, dir)
+
+
+@cli.group()
+def s3():
+    """Commands for S3 backups."""
+    pass
+
+
+@s3.command()
 @s3_options
 @dir_options
 def download(endpoint: str, bucket: str, key: str, secret: str, dir: Path):
-    """S3 ➜ local"""
+    """s3 ➜ local"""
     s3 = S3Config(endpoint=endpoint, bucket=bucket, key=key, secret=secret)
 
     # Download from S3
     _ = _download(s3, dir)
 
 
-@postgres.command()
+@s3.command()
 @s3_options
 @dir_options
 def upload(endpoint: str, bucket: str, key: str, secret: str, dir: Path):
-    """local ➜ S3"""
+    """local ➜ s3"""
     s3 = S3Config(endpoint=endpoint, bucket=bucket, key=key, secret=secret)
 
     # Upload to S3
     _ = _upload(s3, dir)
-
-
-@cli.group(aliases=['es'])
-def elasticsearch():
-    """Commands for ElasticSearch backups."""
-    pass

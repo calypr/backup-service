@@ -1,11 +1,12 @@
 click
 click-aliases
 elasticsearch
+gripql
 minio
+orjson
 psycopg2-binary
 pytest
 
 # Development dependencies
 # TODO: Move to separate file (e.g. dev-requirements.txt)
 testcontainers
-

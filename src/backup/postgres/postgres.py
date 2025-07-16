@@ -48,22 +48,12 @@ def _getDbs(pgConfig: PostgresConfig) -> list[str] | None:
     c = _connect(pgConfig)
 
     # List databases
-    dbs = _listDbs(c)
+    dbs = []
+    with c.cursor() as cur:
+        cur.execute("SELECT datname FROM pg_database WHERE datistemplate = false;")
+        dbs = [row[0] for row in cur.fetchall()]
 
     return dbs
-
-
-def _listDbs(postgres: connection) -> list[str] | None:
-    """
-    Retrieves the names of all databases in the PostgreSQL server.
-    """
-    assert postgres is not None, "Database connection must not be None"
-
-    with postgres.cursor() as cur:
-        cur.execute("SELECT datname FROM pg_database WHERE datistemplate = false;")
-        db_names = [row[0] for row in cur.fetchall()]
-
-    return db_names
 
 
 def _dump(postgres: PostgresConfig, database: str, dir: Path) -> Path | None:

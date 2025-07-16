@@ -2,6 +2,44 @@ from pathlib import Path
 import click
 
 
+def elasticsearch_options(fn):
+    options = [
+        click.option(
+            "--host",
+            "-H",
+            envvar="ES_HOST",
+            default="localhost",
+            show_default=True,
+            help="ElasticSearch host ($ES_HOST)",
+        ),
+        click.option(
+            "--port",
+            "-p",
+            envvar="ES_PORT",
+            default=9200,
+            show_default=True,
+            help="ElasticSearch port ($ES_PORT)",
+        ),
+        click.option(
+            "--user",
+            "-u",
+            envvar="ES_USER",
+            default="elastic",
+            show_default=True,
+            help="ElasticSearch username ($ES_USER)",
+        ),
+        click.option(
+            "--password",
+            "-P",
+            envvar="ES_PASSWORD",
+            help="ElasticSearch password ($ES_PASSWORD)",
+        ),
+    ]
+    for option in reversed(options):
+        fn = option(fn)
+    return fn
+
+
 def postgres_options(fn):
     options = [
         click.option(

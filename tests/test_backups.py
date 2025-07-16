@@ -5,13 +5,13 @@ from backup.elasticsearch import (
     _dump as _esDump,
     _restore as _esRestore,
 )
-from backup.postgres import (
+from backup.postgres.postgres import (
     PostgresConfig,
     _getDbs,
     _dump as _pgDump,
     _restore as _pgRestore,
 )
-from backup.s3 import (
+from backup.s3.s3 import (
     S3Config,
     _download,
     _upload,
