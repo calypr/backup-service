@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/calypr/backup-service/compare/v1.7.0...v1.8.0) (2025-07-16)
+
+
+### Features
+
+* update Elasticsearch backup configuration ([dea977e](https://github.com/calypr/backup-service/commit/dea977efb57b030884c39cbd94e360e0d1786e3b))
+
 # [1.7.0](https://github.com/ACED-IDP/backup-service/compare/v1.6.0...v1.7.0) (2025-07-14)
 
 
