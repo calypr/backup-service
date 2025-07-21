@@ -201,6 +201,7 @@ bak restore \
 # 4. Alternatives 📖
 
 - [velero](https://velero.io)
+- [k8up](https://k8up.io)
 
 # 5. Additional Resources 📚
 
