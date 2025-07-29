@@ -1,5 +1,5 @@
 from backup.elasticsearch import (
-    ElasticSearchConfig,
+    ESConfig,
     _getIndices,
     _dump as _esDump,
     _restore as _esRestore,
@@ -12,7 +12,7 @@ from backup.grip import (
     _restore as _gripRestore,
 )
 from backup.postgres import (
-    PostgresConfig,
+    PGConfig,
     _getDbs,
     _dump as _pgDump,
     _restore as _pgRestore,
@@ -61,8 +61,8 @@ def cli(verbose: bool):
     )
 
     # Avoid INFO and ElasticsearchWarning logging from the elasticsearch logger
-    logging.getLogger('elastic_transport.transport').setLevel(logging.CRITICAL)
-    warnings.simplefilter('ignore', ElasticsearchWarning)
+    logging.getLogger("elastic_transport.transport").setLevel(logging.CRITICAL)
+    warnings.simplefilter("ignore", ElasticsearchWarning)
 
 
 if __name__ == "__main__":
@@ -79,7 +79,7 @@ def elasticsearch():
 @elasticsearch_options
 def listIndices(host: str, port: int, user: str, password: str):
     """list indices"""
-    esConfig = ElasticSearchConfig(host=host, port=port, user=user, password=password)
+    esConfig = ESConfig(host=host, port=port, user=user, password=password)
 
     indices = _getIndices(esConfig)
     if not indices:
@@ -97,7 +97,7 @@ def listIndices(host: str, port: int, user: str, password: str):
 def backup_elasticsearch(host: str, port: int, user: str, password: str, dir: Path):
     """elasticsearch ➜ local"""
 
-    esConfig = ElasticSearchConfig(host=host, port=port, user=user, password=password)
+    esConfig = ESConfig(host=host, port=port, user=user, password=password)
     indices = _getIndices(esConfig)
     if not indices:
         logging.warning(f"No indices found at {esConfig.host}:{esConfig.port}")
@@ -107,18 +107,28 @@ def backup_elasticsearch(host: str, port: int, user: str, password: str, dir: Pa
 @elasticsearch.command(name="restore")
 @elasticsearch_options
 @dir_options
-def restore_elasticsearch(host: str, port: int, user: str, password: str, snapshot: str):
+def restore_elasticsearch(
+    host: str, port: int, user: str, password: str, snapshot: str
+):
     """local ➜ elasticsearch"""
-    esConfig = ElasticSearchConfig(host=host, port=port, user=user, password=password)
+    esConfig = ESConfig(host=host, port=port, user=user, password=password)
 
     indices = _getIndices(esConfig)
     if not indices:
-        logging.warning(f"No indices found to restore at {esConfig.host}:{esConfig.port}.")
+        logging.warning(
+            f"No indices found to restore at {esConfig.host}:{esConfig.port}."
+        )
         return
 
     # Restore indices
     for index in indices:
         _ = _esRestore(esConfig, index, snapshot)
+
+
+@cli.group(aliases=["gp"])
+def grip():
+    """Commands for GRIP backups."""
+    pass
 
 
 @cli.group(aliases=["pg"])
@@ -131,7 +141,7 @@ def postgres():
 @postgres_options
 def listDbs(host: str, port: int, user: str, password: str):
     """list databases"""
-    p = PostgresConfig(host=host, port=port, user=user, password=password)
+    p = PGConfig(host=host, port=port, user=user, password=password)
 
     dbs = _getDbs(p)
     if not dbs:
@@ -148,7 +158,7 @@ def listDbs(host: str, port: int, user: str, password: str):
 @dir_options
 def dump_postgres(host: str, port: int, user: str, password: str, dir: Path):
     """postgres ➜ local"""
-    p = PostgresConfig(host=host, port=port, user=user, password=password)
+    p = PGConfig(host=host, port=port, user=user, password=password)
 
     # Shared timestamp for all dumps
     timestamp = datetime.now().isoformat()
@@ -173,7 +183,7 @@ def dump_postgres(host: str, port: int, user: str, password: str, dir: Path):
 @dir_options
 def restore_postgres(host: str, port: int, user: str, password: str, dir: Path):
     """local ➜ postgres"""
-    p = PostgresConfig(host=host, port=port, user=user, password=password)
+    p = PGConfig(host=host, port=port, user=user, password=password)
 
     dbs = _getDbs(p)
     if not dbs:
@@ -187,9 +197,8 @@ def restore_postgres(host: str, port: int, user: str, password: str, dir: Path):
 
 @cli.group()
 def s3():
-    """Commands for S3 backups."""
+    """Commands for S3."""
     pass
-
 
 @s3.command()
 @s3_options

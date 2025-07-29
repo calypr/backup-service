@@ -1,6 +1,7 @@
 from .elasticsearch import (
-    ElasticSearchConfig,
-    _getIndices,
+    ESConfig,
+    _connect,
     _dump,
+    _getIndices,
     _restore,
 )

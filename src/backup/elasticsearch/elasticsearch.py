@@ -6,7 +6,7 @@ from elasticsearch import Elasticsearch
 
 
 @dataclass
-class ElasticSearchConfig:
+class ESConfig:
     """ElasticSearch config"""
 
     host: str
@@ -18,7 +18,7 @@ class ElasticSearchConfig:
     repo: str = ""
 
 
-def _connect(esConfig: ElasticSearchConfig) -> Elasticsearch:
+def _connect(esConfig: ESConfig) -> Elasticsearch:
     """
     Connects to a given ElasticSearch instance.
     """
@@ -36,7 +36,7 @@ def _connect(esConfig: ElasticSearchConfig) -> Elasticsearch:
     return elastic
 
 
-def _getIndices(esConfig: ElasticSearchConfig) -> list[str] | None:
+def _getIndices(esConfig: ESConfig) -> list[str]:
     """
     Utiltity function to connect to ElasticSearch and list all indices.
     """
@@ -48,7 +48,7 @@ def _getIndices(esConfig: ElasticSearchConfig) -> list[str] | None:
     return indices
 
 
-def _initRepo(esConfig: ElasticSearchConfig) -> bool:
+def _initRepo(esConfig: ESConfig) -> bool:
     """
     Initializes a snapshot repository in ElasticSearch.
     """
@@ -75,7 +75,7 @@ def _initRepo(esConfig: ElasticSearchConfig) -> bool:
     return True
 
 
-def _dump(esConfig: ElasticSearchConfig, index: str, snapshot_id: str) -> str | None:
+def _dump(esConfig: ESConfig, index: str, snapshot_id: str):
     """
     Creates a snapshot of a single index using Elasticsearch Snapshot API.
     """
@@ -84,7 +84,6 @@ def _dump(esConfig: ElasticSearchConfig, index: str, snapshot_id: str) -> str | 
     # Check if index exists before attempting to snapshot
     if not elastic.indices.exists(index=index):
         logging.warning(f"Index '{index}' not found")
-        return None
 
     response = elastic.snapshot.create(
         repository=esConfig.repo,
@@ -97,10 +96,9 @@ def _dump(esConfig: ElasticSearchConfig, index: str, snapshot_id: str) -> str | 
         return snapshot_id
     else:
         logging.error(f"Snapshot '{index}:{snapshot_id}' error: {response}")
-        return None
 
 
-def _restore(esConfig: ElasticSearchConfig, index: str, snapshot: str) -> bool:
+def _restore(esConfig: ESConfig, index: str, snapshot: str) -> bool:
     """
     Restores a single index from a snapshot using Elasticsearch Snapshot API.
     """

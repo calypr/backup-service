@@ -1,7 +1,8 @@
 from .grip import (
     GripConfig,
+    _connect,
+    _dump,
     _getEdges,
     _getVertices,
-    _dump,
     _restore,
 )

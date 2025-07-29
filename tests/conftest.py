@@ -1,4 +1,4 @@
-from backup.postgres.postgres import PostgresConfig
+from backup.postgres.postgres import PGConfig
 from backup.s3.s3 import S3Config
 from minio import Minio
 from pathlib import Path
@@ -15,7 +15,7 @@ def testPostgres():
     """
 
     # List of ephemeral databases to be created in the Postgres container
-    databases = [
+    dbs = [
         "arborist-test",
         "fence-test",
         "gecko-test",
@@ -23,14 +23,16 @@ def testPostgres():
         "requestor-test",
     ]
 
-    with PostgresContainer("postgres") as p:
-        logging.debug(f"Postgres ready at {p.get_connection_url}")
+    with PostgresContainer("postgres") as postgres:
+        logging.debug(f"Postgres ready at {postgres.get_connection_url}")
 
-        yield PostgresConfig(
-            user=p.username,
-            password=p.password,
+        yield PGConfig(
+            # Default: test
+            user=postgres.username,
+            # Default: test
+            password=postgres.password,
             host="localhost",
-            port=p.get_exposed_port(5432),
+            port=postgres.get_exposed_port(5432),
         )
 
 
@@ -40,14 +42,14 @@ def testS3():
     Ephemeral S3 configuration for the test session
     """
 
-    with MinioContainer() as m:
+    with MinioContainer() as minio:
 
         # Get connection parameters
-        host = m.get_container_host_ip()
-        port = m.get_exposed_port(m.port)
+        host = minio.get_container_host_ip()
+        port = minio.get_exposed_port(minio.port)
 
-        key = m.access_key
-        secret = m.secret_key
+        key = minio.access_key
+        secret = minio.secret_key
         endpoint = f"{host}:{port}"
         logging.debug(f"MinIO ready at {endpoint}")
 

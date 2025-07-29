@@ -19,18 +19,23 @@ def _getS3Client(s3: S3Config):
     """
     Returns a MinIO client configured with the provided S3 configuration.
     """
+    
+    # Remove 'https://' prefix if it exists
+    s3.endpoint = s3.endpoint.removeprefix("https://")
+
     return Minio(
         f"{s3.endpoint}",
         access_key=s3.key,
         secret_key=s3.secret,
         credentials=EnvAWSProvider(),
+        secure=True,
     )
 
 
 def _upload(
     s3: S3Config,
     dir: Path,
-) -> Exception | None:
+):
     """
     Uploads a file to S3 (MinIO/Ceph compatible).
     """
@@ -58,41 +63,32 @@ def _upload(
             )
 
     except Exception as err:
-        logging.error(f"Failed to upload files to S3: {err}")
+        logging.error(f"{err}")
         return err
-
-    return None
 
 
 def _download(
     s3: S3Config,
     dir: Path,
-) -> Exception | None:
+):
     """
     Downloads a file from S3 (MinIO/Ceph compatible).
     """
 
     client = _getS3Client(s3)
 
-    try:
-        for obj in client.list_objects(s3.bucket, recursive=True):
-            name = obj.object_name
-            logging.debug(f"obj: {obj}")
+    for obj in client.list_objects(s3.bucket, recursive=True):
+        name = obj.object_name
+        logging.debug(f"obj: {obj}")
 
-            if name is None:
-                continue
+        if name is None:
+            continue
 
-            path = (dir / name).as_posix()
+        path = (dir / name).as_posix()
 
-            logging.debug(f"Downloading {name} from bucket {s3.bucket} to {path}")
-            _ = client.fget_object(
-                bucket_name=s3.bucket,
-                object_name=name,
-                file_path=path,
-            )
-
-    except Exception as err:
-        logging.error(f"Failed to download files from S3: {err}")
-        return err
-
-    return None
+        logging.debug(f"Downloading {name} from bucket {s3.bucket} to {path}")
+        obj = client.fget_object(
+            bucket_name=s3.bucket,
+            object_name=name,
+            file_path=path,
+        )

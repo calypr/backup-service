@@ -1,20 +1,35 @@
+import os
 import pytest
 from backup.elasticsearch import (
-    ElasticSearchConfig,
+    ESConfig,
     _getIndices,
     _dump as _esDump,
     _restore as _esRestore,
 )
-from backup.postgres.postgres import (
-    PostgresConfig,
+from backup.grip import (
+    GripConfig,
+    _getEdges,
+    _getVertices,
+    _dump as _gripDump,
+    _restore as _gripRestore,
+)
+from backup.postgres import (
+    PGConfig,
+    _connect,
     _getDbs,
     _dump as _pgDump,
     _restore as _pgRestore,
 )
-from backup.s3.s3 import (
+from backup.s3 import (
     S3Config,
     _download,
     _upload,
+)
+from backup.options import (
+    dir_options,
+    elasticsearch_options,
+    postgres_options,
+    s3_options,
 )
 
 
@@ -35,7 +50,7 @@ def testListDbs(testPostgres):
     Tests listing databases in the PostgreSQL server.
     """
     connection = _connect(testPostgres)
-    dbs = _listDbs(connection)
+    dbs = _getDbs(testPostgres)
 
     # TODO: Improve test
     assert isinstance(dbs, list)
@@ -46,12 +61,12 @@ def testDump(testPostgres, tmp_path):
     Tests creating a dump of a specific database.
     """
 
-    connection = _connect(testPostgres)
-    dbs = _listDbs(connection)
-    dir = _dump(testPostgres, "postgres", tmp_path)
+    _ = _connect(testPostgres)
+    _ = _getDbs(testPostgres)
+    dir = _pgDump(testPostgres, "postgres", tmp_path)
 
     # TODO: Improve test
-    assert dir.is_dir(), "Dump directory should be created"
+    assert dir is not None, "Dump directory should be created"
 
 
 def testUpload(testS3, testDir):

@@ -88,10 +88,10 @@ def s3_options(fn):
             help="S3 endpoint URL",
         ),
         click.option("--bucket", "-b", required=True, help="S3 bucket name"),
-        click.option("--key", "-k", help="S3 access key ID ($AWS_ACCESS_KEY_ID)"),
-        click.option(
-            "--secret", "-s", help="S3 secret access key ($AWS_SECRET_ACCESS_KEY)"
-        ),
+        # TODO: Support env variables for S3 credentials
+        # ref: https://github.com/minio/minio-go/blob/v7.0.95/pkg/credentials/env_aws.go#L27-L28
+        click.option("--key", "-k", help="S3 access key ID ($AWS_ACCESS_KEY)"),
+        click.option("--secret", "-s", help="S3 secret access key ($AWS_SECRET_KEY)"),
     ]
     for option in options:
         fn = option(fn)

@@ -1,13 +1,14 @@
 from dataclasses import dataclass
-import logging
 from pathlib import Path
 from psycopg2.extensions import connection
+import logging
 import psycopg2
+import shutil
 import subprocess
 
 
 @dataclass
-class PostgresConfig:
+class PGConfig:
     """Postgres config"""
 
     host: str
@@ -16,7 +17,7 @@ class PostgresConfig:
     password: str
 
 
-def _connect(pgConfig: PostgresConfig) -> connection:
+def _connect(pgConfig: PGConfig) -> connection:
     """
     Connects to a given Postgres instance.
     """
@@ -39,7 +40,7 @@ def _connect(pgConfig: PostgresConfig) -> connection:
     return connection
 
 
-def _getDbs(pgConfig: PostgresConfig) -> list[str] | None:
+def _getDbs(pgConfig: PGConfig) -> list[str]:
     """
     Utiltity function to connect to Postgres and list all databases.
     """
@@ -56,54 +57,67 @@ def _getDbs(pgConfig: PostgresConfig) -> list[str] | None:
     return dbs
 
 
-def _dump(postgres: PostgresConfig, database: str, dir: Path) -> Path | None:
+def _dump(pgConfig: PGConfig, db: str, dir: Path) -> Path:
     """
     Creates a single database dump.
     """
+    pg_dump = shutil.which("pg_dump")
+
+    if not pg_dump:
+        raise FileNotFoundError("pg_dump not found in PATH")
+
     command = [
-        "pg_dump",
+        pg_dump,
         "-U",
-        postgres.user,
+        pgConfig.user,
         "-h",
-        postgres.host,
+        pgConfig.host,
         "-p",
-        str(postgres.port),
+        str(pgConfig.port),
         "-d",
-        database,
+        db,
         "--format=c",
         "--no-password",
     ]
 
-    # Dump File
-    dump = Path(f"{dir}/{database}.sql")
+    # Set the environment variable for the password
+    env = {"PGPASSWORD": pgConfig.password}
 
-    try:
-        # We open the output file and direct the command's stdout to it.
-        logging.debug(f"Dumping database '{database}' to '{dump}'")
-        logging.debug(f"Command: {' '.join(command)}")
-        with open(dump, "wb") as out:
+    # Dump File
+    dump = Path(f"{dir}/{db}.sql")
+
+    # We open the output file and direct the command's stdout to it.
+    logging.debug(f"Dumping database '{db}' to '{dump}'")
+    logging.debug(f"Command: {' '.join(command)}")
+    with open(dump, "wb") as out:
+        try:
             _ = subprocess.run(
                 command,
                 stdout=out,
                 stderr=subprocess.PIPE,
                 check=True,
+                env=env,
             )
-        return dump
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Error dumping database '{db}': {e}, stderr: {e.stderr.decode() if e.stderr else ''}")
+            raise
 
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error dumping database '{database}': {e.stderr}")
-        return None
+    return dump
 
 
-def _restore(pgConfig: PostgresConfig, database: str, dir: Path) -> Path | None:
+def _restore(pgConfig: PGConfig, db: str, dir: Path) -> Path:
     """
     Restores a single database from a dump file.
     """
-    dump = dir / Path(f"{database}.sql")
+    dump = dir / Path(f"{db}.sql")
 
     if not dump.exists():
         logging.error(f"Dump file {dump} does not exist")
-        return None
+        raise FileNotFoundError(f"Dump file {dump} does not exist")
+
+
+    if not shutil.which("pg_restore"):
+        logging.error("pg_restore not found in PATH")
 
     command = [
         "pg_restore",
@@ -114,13 +128,13 @@ def _restore(pgConfig: PostgresConfig, database: str, dir: Path) -> Path | None:
         "-p",
         str(pgConfig.port),
         "-d",
-        database,
+        db,
         "--no-password",
         dump.as_posix(),
     ]
 
     try:
-        logging.debug(f"Restoring database '{database}' from dump '{dump}'")
+        logging.debug(f"Restoring database '{db}' from dump '{dump}'")
         logging.debug(f"Command: {' '.join(command)}")
         _ = subprocess.run(
             command,
@@ -131,6 +145,4 @@ def _restore(pgConfig: PostgresConfig, database: str, dir: Path) -> Path | None:
         return dump
 
     except subprocess.CalledProcessError as e:
-        logging.error(f"Error restoring database '{database}': {e.stderr}")
-        return None
-
+        raise
