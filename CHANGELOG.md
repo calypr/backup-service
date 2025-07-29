@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/calypr/backup-service/compare/v1.8.0...v1.8.1) (2025-07-29)
+
+
+### Bug Fixes
+
+* update S3 upload/download ([400181b](https://github.com/calypr/backup-service/commit/400181ba178805c44b2f18e85f9081848f01c174))
+
 # [1.8.0](https://github.com/calypr/backup-service/compare/v1.7.0...v1.8.0) (2025-07-16)
 
 
