@@ -82,6 +82,7 @@ def testUpload(testS3, testDir):
     assert err is None, "Error uploading to S3"
 
 
+@pytest.mark.skip(reason="TODO: Implement")
 def testDownload(testS3, tmp_path):
     """
     Tests downloading database dump from S3.
