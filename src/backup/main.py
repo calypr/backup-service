@@ -3,6 +3,8 @@ from backup.elasticsearch import (
     _getIndices,
     _dump as _esDump,
     _restore as _esRestore,
+    _getRepos,
+    _initRepo,
 )
 from backup.grip import (
     GripConfig,
@@ -24,8 +26,8 @@ from backup.s3 import (
 )
 from backup.options import (
     dir_options,
-    elasticsearch_options,
-    postgres_options,
+    es_options,
+    pg_options,
     s3_options,
 )
 from click_aliases import ClickAliasedGroup
@@ -70,13 +72,13 @@ if __name__ == "__main__":
 
 
 @cli.group(aliases=["es"])
-def elasticsearch():
+def es():
     """Commands for ElasticSearch backups."""
     pass
 
 
-@elasticsearch.command(name="ls")
-@elasticsearch_options
+@es.command(name="ls")
+@es_options
 def listIndices(host: str, port: int, user: str, password: str):
     """list indices"""
     esConfig = ESConfig(host=host, port=port, user=user, password=password)
@@ -91,10 +93,66 @@ def listIndices(host: str, port: int, user: str, password: str):
         click.echo(index)
 
 
-@elasticsearch.command(name="backup")
-@elasticsearch_options
-@dir_options
-def backup_elasticsearch(host: str, port: int, user: str, password: str, dir: Path):
+@es.command(name="ls-repo")  # New command for listing repositories
+@es_options
+def listRepos(host: str, port: int, user: str, password: str):
+    """list snapshot repositories"""
+    esConfig = ESConfig(host=host, port=port, user=user, password=password)
+
+    repos = _getRepos(esConfig)
+    if not repos:
+        logging.warning(
+            f"No snapshot repositories found at {esConfig.host}:{esConfig.port}"
+        )
+        return
+
+    # List repositories
+    for repo in repos:
+        click.echo(repo)
+
+
+@es.command(name="init-repo")  # New command for initializing a repository
+@es_options
+@s3_options
+@click.option(
+    "--repo-name",
+    "-r",
+    required=True,
+    help="Name of the Elasticsearch snapshot repository to initialize.",
+)
+def initRepo(
+    host: str,
+    port: int,
+    user: str,
+    password: str,
+    repo_name: str,
+    endpoint: str,
+    bucket: str,
+    key: str,
+    secret: str,
+):
+    """initialize a snapshot repository"""
+    # Create ElasticSearchConfig including S3 endpoint and bucket for repository creation
+    esConfig = ESConfig(
+        host=host,
+        port=port,
+        user=user,
+        password=password,
+        repo=repo_name,
+        endpoint=endpoint,
+        bucket=bucket,
+    )
+
+    success = _initRepo(esConfig)
+    if success:
+        click.echo(f"Repository '{repo_name}' initialized successfully.")
+    else:
+        logging.error(f"Failed to initialize repository '{repo_name}'.")
+
+
+@es.command(name="backup")
+@es_options
+def backup_es(host: str, port: int, user: str, password: str):
     """elasticsearch ➜ local"""
 
     esConfig = ESConfig(host=host, port=port, user=user, password=password)
@@ -103,13 +161,15 @@ def backup_elasticsearch(host: str, port: int, user: str, password: str, dir: Pa
         logging.warning(f"No indices found at {esConfig.host}:{esConfig.port}")
         return
 
+    for index in indices:
+        snapshot = _esDump(esConfig, index)
+        logging.debug(f"Dumped index '{index}' to '{snapshot}'")
 
-@elasticsearch.command(name="restore")
-@elasticsearch_options
+
+@es.command(name="restore")
+@es_options
 @dir_options
-def restore_elasticsearch(
-    host: str, port: int, user: str, password: str, snapshot: str
-):
+def restore_es(host: str, port: int, user: str, password: str, snapshot: str):
     """local ➜ elasticsearch"""
     esConfig = ESConfig(host=host, port=port, user=user, password=password)
 
@@ -132,13 +192,13 @@ def grip():
 
 
 @cli.group(aliases=["pg"])
-def postgres():
+def pg():
     """Commands for Postgres backups."""
     pass
 
 
-@postgres.command(name="ls")
-@postgres_options
+@pg.command(name="ls")
+@pg_options
 def listDbs(host: str, port: int, user: str, password: str):
     """list databases"""
     p = PGConfig(host=host, port=port, user=user, password=password)
@@ -153,8 +213,8 @@ def listDbs(host: str, port: int, user: str, password: str):
         click.echo(database)
 
 
-@postgres.command(name="dump")
-@postgres_options
+@pg.command(name="dump")
+@pg_options
 @dir_options
 def dump_postgres(host: str, port: int, user: str, password: str, dir: Path):
     """postgres ➜ local"""
@@ -178,8 +238,8 @@ def dump_postgres(host: str, port: int, user: str, password: str, dir: Path):
         logging.debug(f"Dumped {database} to {dump}")
 
 
-@postgres.command(name="restore")
-@postgres_options
+@pg.command(name="restore")
+@pg_options
 @dir_options
 def restore_postgres(host: str, port: int, user: str, password: str, dir: Path):
     """local ➜ postgres"""
@@ -199,6 +259,7 @@ def restore_postgres(host: str, port: int, user: str, password: str, dir: Path):
 def s3():
     """Commands for S3."""
     pass
+
 
 @s3.command()
 @s3_options

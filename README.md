@@ -47,40 +47,7 @@ Commands:
   upload    local ➜ S3
 ```
 
-## Examples
-
-| Example            | Notebook                               |
-| ------------------ | -------------------------------------- |
-| [Example][example] | [![Open in Colab][colab-badge]][colab] |
-
-[example]: https://github.com/ga4gh/task-execution-schemas/releases/tag/v1.1
-[colab-badge]: https://colab.research.google.com/assets/colab-badge.svg
-[colab]: https://colab.research.google.com/github/ACED-IDP/backup-service/blob/main/examples/example.ipynb
-
-> [!TIP]
->
-> <details>
-> <summary>Remote K8s Postgres to S3</summary>
->
-> ```sh
-> ➜ kubectl config current-context
-> kind-dev
->
-> ➜ kubectl get svc | grep postgresql
-> local-postgresql
->
-> ➜ kubectl port-forward service/local-postgresql 5432:5432
-> Forwarding from 127.0.0.1:5432 -> 5432
-> Forwarding from [::1]:5432 -> 5432
->
-> ➜ export PGPASSWORD='example'
->
-> ➜ backup --host localhost:5432 --bucket s3://example-bucket/
-> ```
->
-> </details>
-
-# 3. Architecture 🛠️
+# 3. Design + Examples 📐
 
 ```mermaid
 sequenceDiagram
@@ -99,8 +66,6 @@ sequenceDiagram
     Backup-->>S3: Database Backup
 ```
 
-# 4. Backups ↩️
-
 | Service                | Postgres Database   | Database Backup Name          | Description                                      |
 | ---------------------- | ------------------- | ----------------------------- | ------------------------------------------------ |
 | [Arborist][arborist]   | `arborist-EXAMPLE`  | `arborist-EXAMPLE-TIMESTAMP`  | Gen3 policy engine                               |
@@ -115,18 +80,12 @@ sequenceDiagram
 [indexd]: https://github.com/uc-cdis/indexd
 [requestor]: https://github.com/uc-cdis/requestor
 
-# 3. Design 📐
+## Backup ⬆️
 
-## User Story
-
-As a data manager, I want to reliably back up PostgreSQL databases to S3-compatible storage and restore them when needed, ensuring data integrity and availability across different environments (local, cloud, or hybrid S3-compatible endpoints like MinIO or Ceph). This service should be easy to configure and automate.
-
-## Examples
-
-### Database Dump:
+### Postgres Dump:
 
 ```sh
-bak pg dump \
+➜ bak pg dump \
   --host localhost \
   --port 5432 \
   --user postgres \
@@ -134,21 +93,22 @@ bak pg dump \
   --dir DIR
 ```
 
-### Database Restore:
+## ElasticSearch Backup:
+
+```
+➜ bak es backup
+```
+
+## GRIP Backup:
 
 ```sh
-bak pg restore \
-  --host localhost \
-  --port 5432 \
-  --user postgres \
-  --password PASSWORD \
-  --dir DIR
+➜ bak grip backup
 ```
 
 ### S3 Upload:
 
 ```sh
-bak s3 upload \
+➜ bak s3 upload \
   --dir DIR \
   --endpoint ENDPOINT \
   --bucket BUCKET \
@@ -156,10 +116,35 @@ bak s3 upload \
   --secret SECRET
 ```
 
+## Restore ⬇️
+
+### Postgres Restore:
+
+```sh
+➜ bak pg restore \
+  --host localhost \
+  --port 5432 \
+  --user postgres \
+  --password PASSWORD \
+  --dir DIR
+```
+
+## ElasticSearch Restore:
+
+```
+➜ bak es restore
+```
+
+## GRIP Restore:
+
+```sh
+➜ bak grip restore
+```
+
 ### S3 Download:
 
 ```sh
-bak s3 download \
+➜ bak s3 download \
   --dir DIR \
   --endpoint ENDPOINT \
   --bucket BUCKET \

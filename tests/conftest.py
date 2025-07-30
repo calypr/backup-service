@@ -1,5 +1,5 @@
-from backup.postgres.postgres import PGConfig
-from backup.s3.s3 import S3Config
+from backup.postgres import PGConfig
+from backup.s3 import S3Config
 from minio import Minio
 from pathlib import Path
 from testcontainers.minio import MinioContainer
