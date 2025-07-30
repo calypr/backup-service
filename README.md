@@ -121,87 +121,60 @@ sequenceDiagram
 
 As a data manager, I want to reliably back up PostgreSQL databases to S3-compatible storage and restore them when needed, ensuring data integrity and availability across different environments (local, cloud, or hybrid S3-compatible endpoints like MinIO or Ceph). This service should be easy to configure and automate.
 
-### Acceptance Criteria + Testing
+## Examples
 
-#### Database Dump:
-
-- [ ] The service can connect to a PostgreSQL instance using provided credentials.
-- [ ] It can list all non-template databases within the PostgreSQL instance.
-- [ ] It can successfully create a compressed dump (`.sql` file) for each specified database into a local directory.
-- [ ] Each dump file is named appropriately, incorporating a timestamp for unique identification.
-- [ ] Error handling is in place for failed database connections or dump operations.
+### Database Dump:
 
 ```sh
-# Ensure PGPASSWORD environment variable is set or password is provided securely
-# Example for a local Postgres and MinIO/Ceph
-export PGPASSWORD='your_postgres_password'
-
-bak backup \
+bak pg dump \
   --host localhost \
   --port 5432 \
   --user postgres \
-  --password "$PGPASSWORD" \
-  --dir /tmp/db_dumps \
-  --endpoint https://aced-storage.ohsu.edu \
-  --bucket backup-tests \
-  --key your_s3_access_key \
-  --secret your_s3_secret_key
+  --password PASSWORD \
+  --dir DIR
 ```
 
-#### S3 Upload:
-
-- [ ] The service can connect to an S3-compatible endpoint (e.g., MinIO, Ceph, AWS S3) using provided credentials and endpoint URL.
-- [ ] It can successfully upload the generated database dump files to the specified S3 bucket.
-- [ ] The upload operation handles files of various sizes.
-- [ ] The upload mechanism is configured to avoid common S3-compatibility issues, such as checksum mismatches, when interacting with non-AWS S3 targets by disabling client-side checksum generation where possible.
-- [ ] Error handling is in place for failed S3 connection or upload operations.
+### Database Restore:
 
 ```sh
-bak upload \
-  --dir /path/to/local/dumps \
-  --endpoint https://aced-storage.ohsu.edu \
-  --bucket backup-tests \
-  --key your_s3_access_key \
-  --secret your_s3_secret_key
-```
-
-#### S3 Download:
-
-- [ ] The service can connect to the S3-compatible endpoint and list objects within the specified bucket.
-- [ ] It can successfully download objects (database dumps) from the S3 bucket to a local directory.
-- [ ] Error handling is in place for failed S3 connection or download operations.
-
-```sh
-bak download \
-  --dir /tmp/downloaded_dumps \
-  --endpoint https://aced-storage.ohsu.edu \
-  --bucket backup-tests \
-  --key your_s3_access_key \
-  --secret your_s3_secret_key
-```
-
-#### Database Restore:
-
-- [ ] The service can successfully restore a database from a locally available dump file using `pg_restore`.
-- [ ] The restore operation can target an existing database.
-- [ ] Error handling is in place for failed restore operations.
-
-```sh
-# Assuming /tmp/downloaded_dumps/your_database.sql exists
-export PGPASSWORD='your_postgres_password'
-
-bak restore \
+bak pg restore \
   --host localhost \
   --port 5432 \
   --user postgres \
-  --password "$PGPASSWORD" \
-  --dir /tmp/downloaded_dumps # The directory where the dump file is
+  --password PASSWORD \
+  --dir DIR
+```
+
+### S3 Upload:
+
+```sh
+bak s3 upload \
+  --dir DIR \
+  --endpoint ENDPOINT \
+  --bucket BUCKET \
+  --key KEY \
+  --secret SECRET
+```
+
+### S3 Download:
+
+```sh
+bak s3 download \
+  --dir DIR \
+  --endpoint ENDPOINT \
+  --bucket BUCKET \
+  --key KEY \
+  --secret SECRET
 ```
 
 # 4. Alternatives 📖
 
-- [velero](https://velero.io)
-- [k8up](https://k8up.io)
+> [!TIP]
+> The alternative options below work on the K8s resources themseleves (e.g. PVC/PV) as opposed to database resources (e.g. Postgres tables, ElasticSearch indices)
+
+- [velero](https://velero.io): Open source tool to safely backup and restore, perform disaster recovery, and migrate Kubernetes cluster resources and persistent volumes.
+
+- [k8up](https://k8up.io): Kubernetes Backup Operator
 
 # 5. Additional Resources 📚
 
