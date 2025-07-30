@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/calypr/backup-service/compare/v1.8.1...v1.9.0) (2025-07-30)
+
+
+### Features
+
+* update README ([458979b](https://github.com/calypr/backup-service/commit/458979bf470f2ee2c47a14760869a5913f12f05a))
+
 ## [1.8.1](https://github.com/calypr/backup-service/compare/v1.8.0...v1.8.1) (2025-07-29)
 
 
