@@ -63,6 +63,29 @@ def es_options(fn):
         fn = option(fn)
     return fn
 
+def grip_options(fn):
+    options = [
+        click.option(
+            "--host",
+            "-H",
+            envvar="GRIPHOST",
+            default="localhost",
+            show_default=True,
+            help="GRIP host ($GRIPHOST)",
+        ),
+        click.option(
+            "--port",
+            "-p",
+            envvar="GRIPPORT",
+            default=8201,
+            show_default=True,
+            help="GRIP port ($GRIPPORT)",
+        ),
+    ]
+    for option in reversed(options):
+        fn = option(fn)
+    return fn
+
 
 def pg_options(fn):
     options = [

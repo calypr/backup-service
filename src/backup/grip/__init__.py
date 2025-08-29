@@ -19,6 +19,7 @@
 # pip install orjson
 
 from dataclasses import dataclass
+from pathlib import Path
 import gripql
 import orjson
 
@@ -31,21 +32,40 @@ class GripConfig:
     port: int
 
 
-def _getEdges():
-    pass
+def _getEdges(grip: GripConfig):
+    """
+    Utiltity function to connect to Grip and list all edges.
+    """
+
+    # Connect to Grip
+    c = _connect(grip)
+
+    # List Edges
+    edges = []
+
+    return edges
 
 
-def _getVertices():
-    pass
+def _getVertices(grip: GripConfig):
+    """
+    Utility function to connect to Grip and list all vertices.
+    """
+    c = _connect(grip)
+
+    # List Vertices
+    vertices = []
+
+    return vertices
 
 
 def _connect(grip: GripConfig) -> gripql.Connection:
     """
     Connects to a given grip instance.
     """
+
     # Create a grip client
     try:
-        client = gripql.Connection(url="http://localhost:8201")
+        client = gripql.Connection(url=f"http://{grip.host}:{grip.port}")
     except Exception as err:
         print(f"Error connecting to Grip: {err}")
         raise
@@ -53,7 +73,7 @@ def _connect(grip: GripConfig) -> gripql.Connection:
     return client
 
 
-def _dump(grip: GripConfig):
+def _dump(grip: GripConfig, out: Path):
     # Dump
 
     conn = _connect(grip)
@@ -79,7 +99,7 @@ def _dump(grip: GripConfig):
             if count % 10000 == 0:
                 print("dumped %d edges" % count)
 
-    # At this point you will need to reconnect to the new grip instance to load the data that was dumped
+    # TODO: At this point you will need to reconnect to the new grip instance to load the data that was dumped
 
 
 def _restore(grip: GripConfig):

@@ -20,4 +20,23 @@ bak --debug s3 upload \
     --key "${KEY}" \
     --secret "${SECRET}"
 
-echo "Backup completed at $(date)"
+echo "Postgres Backup completed at $(date)"
+
+# GRIP Backup
+echo "Running GRIP backup..."
+bak --debug grip backup \
+    --dir "${DIR}" \
+    --host "${GRIP_HOST}" \
+    --user "${GRIP_USER}" \
+    --password "${GRIP_PASSWORD}"
+
+# S3 Upload
+echo "Running S3 upload..."
+bak --debug s3 upload \
+    --dir "${DIR}" \
+    --endpoint "${ENDPOINT}" \
+    --bucket "${BUCKET}" \
+    --key "${KEY}" \
+--secret "${SECRET}"
+
+echo "GRIP Backup completed at $(date)"

@@ -27,6 +27,7 @@ from backup.s3 import (
 from backup.options import (
     dir_options,
     es_options,
+    grip_options,
     pg_options,
     s3_options,
 )
@@ -188,6 +189,59 @@ def restore_es(host: str, port: int, user: str, password: str, snapshot: str):
 @cli.group(aliases=["gp"])
 def grip():
     """Commands for GRIP backups."""
+    pass
+
+
+@grip.command(name="ls")
+@grip_options
+@click.option("--vertices", is_flag=True, help="Only list GRIP vertices.")
+@click.option("--edges", is_flag=True, help="Only list GRIP edges.")
+def list_grip(host: str, port: int, vertices: bool, edges: bool):
+    """list GRIP vertices and/or edges"""
+    g = GripConfig(host=host, port=port)
+
+    show_vertices = vertices or not (vertices or edges)
+    show_edges = edges or not (vertices or edges)
+
+    if show_vertices:
+        verts = _getVertices(g)
+        if not verts:
+            logging.warning(f"No vertices found at {g.host}:{g.port}")
+        else:
+            click.echo("Vertices:")
+            for vertex in verts:
+                click.echo(vertex)
+
+    if show_edges:
+        eds = _getEdges(g)
+        if not eds:
+            logging.warning(f"No edges found at {g.host}:{g.port}")
+        else:
+            click.echo("Edges:")
+            for edge in eds:
+                click.echo(edge)
+
+
+@grip.command(name="backup")
+@grip_options
+@dir_options
+def backup_grip(host: str, port: int, dir: Path):
+    """grip ➜ local"""
+    conf = GripConfig(host=host, port=port)
+
+    # Shared timestamp for all dumps
+    timestamp = datetime.now().isoformat()
+    out = dir / Path(timestamp)
+    out.mkdir(parents=True, exist_ok=True)
+
+    _gripDump(conf, out)
+
+
+@grip.command(name="restore")
+@grip_options
+@dir_options
+def restore_grip(host: str, port: int, user: str, password: str, dir: Path):
+    """local ➜ grip"""
     pass
 
 
