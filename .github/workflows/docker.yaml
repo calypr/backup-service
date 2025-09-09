@@ -6,7 +6,6 @@ name: Build Image
 
 on:
   push:
-  pull_request:
 
 env:
   QUAY_REPO: quay.io/ohsu-comp-bio/${{ github.event.repository.name }}

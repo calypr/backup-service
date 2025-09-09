@@ -43,6 +43,13 @@ def _getEdges(grip: GripConfig):
     # List Edges
     edges = []
 
+    # TODO: Set default graph (but pass in via parameter)
+    G = c.graph("CALYPR")
+
+    # TODO: Set default limit (but pass in via parameter)
+    for i in G.query().E().limit(1):
+        edges.append(i)
+
     return edges
 
 
@@ -54,6 +61,13 @@ def _getVertices(grip: GripConfig):
 
     # List Vertices
     vertices = []
+
+    # TODO: Set default graph (but pass in via parameter)
+    G = c.graph("CALYPR")
+
+    # TODO: Set default limit (but pass in via parameter)
+    for i in G.query().V().limit(1):
+        vertices.append(i)
 
     return vertices
 

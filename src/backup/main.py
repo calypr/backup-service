@@ -194,21 +194,22 @@ def grip():
 
 @grip.command(name="ls")
 @grip_options
-@click.option("--vertices", is_flag=True, help="Only list GRIP vertices.")
-@click.option("--edges", is_flag=True, help="Only list GRIP edges.")
-def list_grip(host: str, port: int, vertices: bool, edges: bool):
+@click.option(
+    "--vertex", "--vertices", "-v", is_flag=True, help="Only list GRIP vertices."
+)
+@click.option("--edge", "--edges", "-e", is_flag=True, help="Only list GRIP edges.")
+def list_grip(host: str, port: int, vertex: bool, edge: bool):
     """list GRIP vertices and/or edges"""
     g = GripConfig(host=host, port=port)
 
-    show_vertices = vertices or not (vertices or edges)
-    show_edges = edges or not (vertices or edges)
+    show_vertices = vertex or not (vertex or edge)
+    show_edges = edge or not (vertex or edge)
 
     if show_vertices:
         verts = _getVertices(g)
         if not verts:
             logging.warning(f"No vertices found at {g.host}:{g.port}")
         else:
-            click.echo("Vertices:")
             for vertex in verts:
                 click.echo(vertex)
 
@@ -217,7 +218,6 @@ def list_grip(host: str, port: int, vertices: bool, edges: bool):
         if not eds:
             logging.warning(f"No edges found at {g.host}:{g.port}")
         else:
-            click.echo("Edges:")
             for edge in eds:
                 click.echo(edge)
 
