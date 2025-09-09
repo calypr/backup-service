@@ -34,7 +34,7 @@ class GripConfig:
 
 def _getEdges(grip: GripConfig):
     """
-    Utiltity function to connect to Grip and list all edges.
+    Utility function to connect to Grip and list all edges.
     """
 
     # Connect to Grip
