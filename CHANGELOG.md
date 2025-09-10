@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/calypr/backup-service/compare/v1.11.1...v1.12.0) (2025-09-10)
+
+
+### Features
+
+* add support for graph schemas in backups ([3f1b09e](https://github.com/calypr/backup-service/commit/3f1b09ef28018e32c6ba5633eb9fdc0ce262d59c))
+
 ## [1.11.1](https://github.com/calypr/backup-service/compare/v1.11.0...v1.11.1) (2025-09-10)
 
 
