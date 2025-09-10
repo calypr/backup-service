@@ -17,6 +17,7 @@ bak --debug grip backup \
     --dir "${DIR}" \
     --host "${GRIP_HOST}" \
     --graph "${GRIP_GRAPH}" \
+    --limit "${GRIP_LIMIT}" \
     --vertex \
     --edge
 
