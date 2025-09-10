@@ -97,8 +97,12 @@ def backup_grip(host: str, port: int, graph: str, limit: int, vertex: bool, edge
     dir.mkdir(parents=True, exist_ok=True)
 
     logging.debug(f"Backing up GRIP graph '{graph}' to directory '{dir}'")
-
     _gripDump(conf, graph, limit, vertex, edge, dir)
+
+    # TODO: Better way to handle GRIP graph schemas?
+    schema = f"{graph}__schema__"
+    logging.debug(f"Backing up GRIP graph '{schema}' to directory '{dir}'")
+    _gripDump(conf, schema, limit, vertex, edge, dir)
 
 
 @grip.command(name="restore")

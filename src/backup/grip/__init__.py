@@ -90,12 +90,12 @@ def _dump(grip: GripConfig, graph: str, limit: int, vertex: bool, edge: bool, ou
 
     # write vertex and edge objects from grip DB to file
     if vertex:
-        with open(out / "grip.vertices", "wb") as f:
+        with open(out / f"{graph}.vertices", "wb") as f:
             for i in G.query().V().limit(limit):
                 f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
     if edge:
-        with open(out / "grip.edges", "wb") as f:
+        with open(out / f"{graph}.edges", "wb") as f:
             for i in G.query().E().limit(limit):
                 f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
