@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/calypr/backup-service/compare/v1.10.0...v1.11.0) (2025-09-10)
+
+
+### Features
+
+* update entrypoint.sh ([96e3d1a](https://github.com/calypr/backup-service/commit/96e3d1a6d18701024bd22a757d51ccff364a20f5))
+
 # [1.10.0](https://github.com/calypr/backup-service/compare/v1.9.0...v1.10.0) (2025-09-10)
 
 
