@@ -27,8 +27,9 @@ echo "Running GRIP backup..."
 bak --debug grip backup \
     --dir "${DIR}" \
     --host "${GRIP_HOST}" \
-    --user "${GRIP_USER}" \
-    --password "${GRIP_PASSWORD}"
+    --graph "${GRIP_GRAPH}" \
+    --vertex \
+    --edge
 
 # S3 Upload
 echo "Running S3 upload..."

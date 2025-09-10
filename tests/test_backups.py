@@ -1,11 +1,4 @@
-import os
 import pytest
-from backup.elasticsearch import (
-    ESConfig,
-    _getIndices,
-    _dump as _esDump,
-    _restore as _esRestore,
-)
 from backup.grip import (
     GripConfig,
     _getEdges,
@@ -27,7 +20,6 @@ from backup.s3 import (
 )
 from backup.options import (
     dir_options,
-    es_options,
     pg_options,
     s3_options,
 )

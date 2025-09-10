@@ -2,91 +2,52 @@ from pathlib import Path
 import click
 
 
-def es_options(fn):
-    options = [
-        click.option(
-            "--host",
-            "-H",
-            envvar="ES_HOST",
-            default="localhost",
-            show_default=True,
-            help="ElasticSearch host ($ES_HOST)",
-        ),
-        click.option(
-            "--port",
-            "-p",
-            envvar="ES_PORT",
-            default=9200,
-            show_default=True,
-            help="ElasticSearch port ($ES_PORT)",
-        ),
-        click.option(
-            "--user",
-            "-u",
-            envvar="ES_USER",
-            default="elastic",
-            show_default=True,
-            help="ElasticSearch username ($ES_USER)",
-        ),
-        click.option(
-            "--password",
-            "-P",
-            envvar="ES_PASSWORD",
-            help="ElasticSearch password ($ES_PASSWORD)",
-        ),
-        # click.option(
-        #     "--repo",
-        #     "-r",
-        #     envvar="ES_REPO",
-        #     default="backup_repo",
-        #     show_default=True,
-        #     help="ElasticSearch snapshot repository name ($ES_REPO)",
-        # ),
-        # click.option(
-        #     "--bucket",
-        #     "-b",
-        #     envvar="ES_BUCKET",
-        #     default="backup_bucket",
-        #     show_default=True,
-        #     help="S3 bucket name for ElasticSearch backups ($ES_BUCKET)",
-        # ),
-        # click.option(
-        #     "--endpoint",
-        #     "-e",
-        #     envvar="ES_ENDPOINT",
-        #     default="https://s3.amazonaws.com",
-        #     show_default=True,
-        #     help="S3 endpoint URL for ElasticSearch backups ($ES_ENDPOINT)",
-        # ),
-    ]
-    for option in reversed(options):
-        fn = option(fn)
-    return fn
-
+# GRIP Flags
 def grip_options(fn):
     options = [
         click.option(
+            "--edge", "--edges", "-e", is_flag=True, help="Output GRIP edges."
+        ),
+        click.option("--graph", "-g", default="CALYPR", help="Name of the GRIP graph."),
+        click.option(
             "--host",
             "-H",
-            envvar="GRIPHOST",
+            envvar="GRIP_HOST",
             default="localhost",
             show_default=True,
             help="GRIP host ($GRIPHOST)",
         ),
         click.option(
+            "--limit",
+            "-l",
+            envvar="GRIP_LIMIT",
+            type=int,
+            default=10000,
+            help="Limit number of items listed.",
+        ),
+        click.option(
             "--port",
             "-p",
-            envvar="GRIPPORT",
+            envvar="GRIP_PORT",
             default=8201,
             show_default=True,
-            help="GRIP port ($GRIPPORT)",
+            help="GRIP port ($GRIP_PORT)",
         ),
+        click.option(
+            "--vertex",
+            "--vertices",
+            "-v",
+            is_flag=True,
+            help="Output GRIP vertices.",
+        ),
+
     ]
     for option in reversed(options):
         fn = option(fn)
     return fn
 
 
+# Postgres Flags
 def pg_options(fn):
     options = [
         click.option(
@@ -125,6 +86,7 @@ def pg_options(fn):
     return fn
 
 
+# S3 Flags
 def s3_options(fn):
     options = [
         click.option(
@@ -145,6 +107,7 @@ def s3_options(fn):
     return fn
 
 
+# Output/intput directory flags
 dir_options = click.option(
     "--dir",
     "-d",
