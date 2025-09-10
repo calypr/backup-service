@@ -94,13 +94,11 @@ def backup_grip(host: str, port: int, graph: str, limit: int, vertex: bool, edge
     conf = GripConfig(host=host, port=port)
 
     # Set timestamp
-    timestamp = datetime.now().isoformat()
-    out = dir / Path(timestamp)
-    out.mkdir(parents=True, exist_ok=True)
+    dir.mkdir(parents=True, exist_ok=True)
 
-    logging.debug(f"Backing up GRIP graph '{graph}' to directory '{out}'")
+    logging.debug(f"Backing up GRIP graph '{graph}' to directory '{dir}'")
 
-    _gripDump(conf, graph, limit, vertex, edge, out)
+    _gripDump(conf, graph, limit, vertex, edge, dir)
 
 
 @grip.command(name="restore")
@@ -142,12 +140,8 @@ def dump_postgres(host: str, port: int, user: str, password: str, dir: Path):
     """postgres ➜ local"""
     conf = PGConfig(host=host, port=port, user=user, password=password)
 
-    # Shared timestamp for all dumps
-    timestamp = datetime.now().isoformat()
-
     # Dump directory
-    out = dir / Path(timestamp)
-    out.mkdir(parents=True, exist_ok=True)
+    dir.mkdir(parents=True, exist_ok=True)
 
     dbs = _getDbs(conf)
     if not dbs:
@@ -156,7 +150,7 @@ def dump_postgres(host: str, port: int, user: str, password: str, dir: Path):
 
     # Dump databases
     for database in dbs:
-        dump = _pgDump(conf, database, out)
+        dump = _pgDump(conf, database, dir)
         logging.debug(f"Dumped {database} to {dump}")
 
 
