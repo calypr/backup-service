@@ -1,3 +1,10 @@
+## [1.12.1](https://github.com/calypr/backup-service/compare/v1.12.0...v1.12.1) (2025-09-10)
+
+
+### Bug Fixes
+
+* update output dir in entrypoint.sh ([3e67514](https://github.com/calypr/backup-service/commit/3e675144a6a2a84aa01e5300985862e764888cff))
+
 # [1.12.0](https://github.com/calypr/backup-service/compare/v1.11.1...v1.12.0) (2025-09-10)
 
 
