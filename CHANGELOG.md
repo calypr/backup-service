@@ -1,3 +1,14 @@
+# [1.10.0](https://github.com/calypr/backup-service/compare/v1.9.0...v1.10.0) (2025-09-10)
+
+
+### Features
+
+* add commit tagging to Docker images ([42780a5](https://github.com/calypr/backup-service/commit/42780a5865a511039e4eb3557d5e94c0546219d0))
+* add GRIP build to Dockerfile ([98ce9a6](https://github.com/calypr/backup-service/commit/98ce9a683bd2e9e9933b42544292984b32ec0780))
+* add initial GRIP backup commands ([14e5eba](https://github.com/calypr/backup-service/commit/14e5ebac88d54edee245fca52716a1661463d40e))
+* Add initial GRIP ls command for listing graphs and edges ([547aa5a](https://github.com/calypr/backup-service/commit/547aa5aa1807538e9234e82f11fe5c708b1c81a7))
+* update GRIP backup logic ([12147e6](https://github.com/calypr/backup-service/commit/12147e68c4f340ad7f06b2148b7e144d7a5ef86a))
+
 # [1.9.0](https://github.com/calypr/backup-service/compare/v1.8.1...v1.9.0) (2025-07-30)
 
 
