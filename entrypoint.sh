@@ -3,7 +3,7 @@ set -e
 
 TIMESTAMP=$(date +"%Y-%m-%dT%H:%M:%S")
 
-DIR="${DIR/$TIMESTAMP}"
+export DIR="${DIR}/${TIMESTAMP}"
 
 # Postgres Dump
 bak --debug pg dump \
