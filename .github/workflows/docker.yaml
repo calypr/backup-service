@@ -6,7 +6,6 @@ name: Build Image
 
 on:
   push:
-  pull_request:
 
 env:
   QUAY_REPO: quay.io/ohsu-comp-bio/${{ github.event.repository.name }}
@@ -103,6 +102,7 @@ jobs:
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=
 
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests

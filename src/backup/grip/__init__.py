@@ -19,6 +19,7 @@
 # pip install orjson
 
 from dataclasses import dataclass
+from pathlib import Path
 import gripql
 import orjson
 
@@ -31,21 +32,50 @@ class GripConfig:
     port: int
 
 
-def _getEdges():
-    pass
+def _getEdges(grip: GripConfig, graph: str, limit: int) -> list[str]:
+    """
+    Utility function to connect to Grip and list all edges.
+    """
+
+    # Connect to Grip
+    c = _connect(grip)
+
+    # List Edges
+    edges = []
+
+    G = c.graph(graph)
+
+    for i in G.query().E().limit(limit):
+        edges.append(i)
+
+    return edges
 
 
-def _getVertices():
-    pass
+def _getVertices(grip: GripConfig, graph: str, limit: int) -> list[str]:
+    """
+    Utility function to connect to Grip and list all vertices.
+    """
+    c = _connect(grip)
+
+    # List Vertices
+    vertices = []
+
+    G = c.graph(graph)
+
+    for i in G.query().V().limit(limit):
+        vertices.append(i)
+
+    return vertices
 
 
 def _connect(grip: GripConfig) -> gripql.Connection:
     """
     Connects to a given grip instance.
     """
+
     # Create a grip client
     try:
-        client = gripql.Connection(url="http://localhost:8201")
+        client = gripql.Connection(url=f"http://{grip.host}:{grip.port}")
     except Exception as err:
         print(f"Error connecting to Grip: {err}")
         raise
@@ -53,43 +83,29 @@ def _connect(grip: GripConfig) -> gripql.Connection:
     return client
 
 
-def _dump(grip: GripConfig):
+def _dump(grip: GripConfig, graph: str, limit: int, vertex: bool, edge: bool, out: Path) -> None:
     # Dump
-
     conn = _connect(grip)
+    G = conn.graph(graph)
 
-    conn.addGraph("NEWGRAPH")
-    G = conn.graph("NEWGRAPH")
-
-    print("dumping data")
     # write vertex and edge objects from grip DB to file
-    with open("grip.vertices", "wb") as f:
-        count = 0
-        for i in G.query().V().limit(20000):
-            f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
-            count += 1
-            if count % 10000 == 0:
-                print("dumped %d vertices" % count)
+    if vertex:
+        with open(out / "grip.vertices", "wb") as f:
+            for i in G.query().V().limit(limit):
+                f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
-    with open("grip.edges", "wb") as f:
-        count = 0
-        for i in G.query().E().limit(20000):
-            f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
-            count += 1
-            if count % 10000 == 0:
-                print("dumped %d edges" % count)
+    if edge:
+        with open(out / "grip.edges", "wb") as f:
+            for i in G.query().E().limit(limit):
+                f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
-    # At this point you will need to reconnect to the new grip instance to load the data that was dumped
+    # TODO: At this point you will need to reconnect to the new grip instance to load the data that was dumped
 
 
-def _restore(grip: GripConfig):
+def _restore(grip: GripConfig, graph: str, dir: Path):
     ## Load
-    print("loading data")
-
     conn = _connect(grip)
-
-    conn.addGraph("NEWGRAPH")
-    G = conn.graph("NEWGRAPH")
+    G = conn.graph(graph)
 
     bulkV = G.bulkAdd()
     with open("grip.vertices", "rb") as f:
