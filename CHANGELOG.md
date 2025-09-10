@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/calypr/backup-service/compare/v1.11.0...v1.11.1) (2025-09-10)
+
+
+### Bug Fixes
+
+* move timestamp logic from Python to entrypoint.sh ([513ca56](https://github.com/calypr/backup-service/commit/513ca56c9476fdc05798aa50d580b60f46236708))
+
 # [1.11.0](https://github.com/calypr/backup-service/compare/v1.10.0...v1.11.0) (2025-09-10)
 
 
