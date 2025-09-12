@@ -52,7 +52,7 @@ Commands:
 
 | Command      | Example           |
 |--------------|-------------------|
-| List backups | `bak pg ls`       |
+| List backups | `bak s3 ls`       |
 | Upload       | `bak s3 upload`   |
 | Download     | `bak s3 download` |
 
