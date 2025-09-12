@@ -44,7 +44,7 @@ Commands:
 
 | Command     | Example            |
 |-------------|--------------------|
-| List Graphs | `bak pg ls`        |
+| List Graphs | `bak grip ls`      |
 | Backup      | `bak grip backup`  |
 | Restore     | `bak grip restore` |
 
