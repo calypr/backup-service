@@ -113,3 +113,8 @@ venv.bak/
 
 # SQL files
 .sql
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
