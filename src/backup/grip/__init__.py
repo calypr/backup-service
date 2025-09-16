@@ -45,7 +45,7 @@ def _getEdges(grip: GripConfig, graph: str, limit: int) -> list[str]:
 
     G = c.graph(graph)
 
-    for i in G.query().E().limit(limit):
+    for i in G.E().limit(limit):
         edges.append(i)
 
     return edges
@@ -62,7 +62,7 @@ def _getVertices(grip: GripConfig, graph: str, limit: int) -> list[str]:
 
     G = c.graph(graph)
 
-    for i in G.query().V().limit(limit):
+    for i in G.V().limit(limit):
         vertices.append(i)
 
     return vertices
@@ -91,12 +91,12 @@ def _dump(grip: GripConfig, graph: str, limit: int, vertex: bool, edge: bool, ou
     # write vertex and edge objects from grip DB to file
     if vertex:
         with open(out / f"{graph}.vertices", "wb") as f:
-            for i in G.query().V().limit(limit):
+            for i in G.V().limit(limit):
                 f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
     if edge:
         with open(out / f"{graph}.edges", "wb") as f:
-            for i in G.query().E().limit(limit):
+            for i in G.E().limit(limit):
                 f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
     # TODO: At this point you will need to reconnect to the new grip instance to load the data that was dumped
@@ -107,34 +107,41 @@ def _restore(grip: GripConfig, graph: str, dir: Path):
     conn = _connect(grip)
     G = conn.graph(graph)
 
-    bulkV = G.bulkAdd()
-    with open("grip.vertices", "rb") as f:
-        count = 0
-        for i in f:
-            data = orjson.loads(i)
-            _id = data["_id"]
-            _label = data["_label"]
-            del data["_id"], data["_label"]
-            bulkV.addVertex(_id, _label, data)
-            count += 1
-            if count % 10000 == 0:
-                print("loaded %d vertices" % count)
-    err = bulkV.execute()
-    print("Vertices load res: ", str(err))
+    vertex_file = dir / f"{graph}.vertices"
+    edge_file = dir / f"{graph}.edges"
 
-    bulkE = G.bulkAdd()
-    with open("grip.edges", "rb") as f:
-        count = 0
-        for i in f:
-            data = orjson.loads(i)
-            _id = data["_id"]
-            _label = data["_label"]
-            _to = data["_to"]
-            _from = data["_from"]
-            del data["_id"], data["_label"], data["_to"], data["_from"]
-            bulkE.addEdge(_to, _from, _label, data=data, gid=_id)
-            count += 1
-            if count % 10000 == 0:
-                print("loaded %d edges" % count)
-    err = bulkE.execute()
-    print("Edges load res: ", str(err))
+    # Load vertices if file exists
+    if vertex_file.exists():
+        bulkV = G.bulkAdd()
+        with open(vertex_file, "rb") as f:
+            count = 0
+            for i in f:
+                data = orjson.loads(i)
+                _id = data["_id"]
+                _label = data["_label"]
+                del data["_id"], data["_label"]
+                bulkV.addVertex(_id, _label, data)
+                count += 1
+                if count % 10000 == 0:
+                    print("loaded %d vertices" % count)
+        err = bulkV.execute()
+        print("Vertices load res: ", str(err))
+
+    # Load edges if file exists
+    if edge_file.exists():
+        bulkE = G.bulkAdd()
+        with open(edge_file, "rb") as f:
+            count = 0
+            for i in f:
+                data = orjson.loads(i)
+                _id = data["_id"]
+                _label = data["_label"]
+                _to = data["_to"]
+                _from = data["_from"]
+                del data["_id"], data["_label"], data["_to"], data["_from"]
+                bulkE.addEdge(_to, _from, _label, data=data, gid=_id)
+                count += 1
+                if count % 10000 == 0:
+                    print("loaded %d edges" % count)
+        err = bulkE.execute()
+        print("Edges load res: ", str(err))

@@ -23,6 +23,52 @@
 
 Data backup and recovery service for the CALYPR systems 🔄
 
+## Deployment
+
+This service is deployed using [Helm charts](https://github.com/ohsu-comp-bio/helm-charts/tree/main/charts/backups). The helm chart provides:
+
+- Automated backup scheduling via CronJob
+- Secret management integration with existing PostgreSQL secrets
+- Configurable S3 storage backends
+- Simple deployment with `helm install`
+
+For manual job execution:
+```bash
+# Create a backup job
+kubectl create job backup-job --from=cronjob/backup-service-cronjob --namespace backups
+
+# Create a restore job (set OPERATION=restore environment variable)
+kubectl create job restore-job --from=cronjob/backup-service-cronjob --namespace backups
+# Note: You'll need to patch the job to set OPERATION=restore environment variable
+```
+
+## Configuration
+
+The service can be configured through environment variables:
+
+- **OPERATION**: `backup` (default) or `restore` - determines the operation mode
+- **RESTORE_DIR**: Directory path for restore operations (defaults to timestamped directory)
+- **PGPASSWORD**: Can be sourced from existing `local-postgresql` secret (base64 encoded)
+- **GRIP_GRAPH**: Graph name (should be configurable via helm global config)
+- **GRIP_LIMIT**: Query limit (should be removed for production use)
+
+The helm chart automatically handles secret management and configuration from global helm values.
+
+## Best Practices
+
+### Namespace Configuration
+While the helm chart defaults to a separate `backups` namespace, consider deploying in the same namespace as your databases to simplify network access and secret sharing, as the backup service needs direct access to database resources.
+
+### Secret Management
+- **No separate secrets needed**: PGPASSWORD can be extracted from existing `local-postgresql` secret (base64 encoded)
+- **Helm integration**: All configuration should be managed through helm values files
+- **S3 credentials**: Configure S3 bucket and credentials through helm secrets file
+
+### Performance and Storage
+- **Remove query limits**: Production deployments should remove GRIP_LIMIT for complete backups
+- **Backup retention**: Implement a retention policy (e.g., keep daily backups for 30 days, weekly for 3+ months)
+- **Global configuration**: Use helm global config for shared values like graph names instead of hardcoding
+
 # 2. Quick Start ⚡
 
 ```sh
