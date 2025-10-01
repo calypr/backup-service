@@ -73,23 +73,25 @@ def grip():
 
 @grip.command(name="ls")
 @grip_options
-def list_grip(host: str, port: int, graph: str, limit: int, vertex: bool, edge: bool):
+def list_grip(host: str, port: int, graph: str, vertex: bool, edge: bool):
     """list GRIP vertices and/or edges"""
     conf = GripConfig(host=host, port=port)
 
     if vertex:
-        for v in _getVertices(conf, graph, limit):
+        logging.debug(f"Listing vertices from GRIP graph '{graph}' at {conf.host}:{conf.port}")
+        for v in _getVertices(conf, graph):
             click.echo(json.dumps(v, indent=2))
 
     if edge:
-        for e in _getEdges(conf, graph, limit):
+        logging.debug(f"Listing edges from GRIP graph '{graph}' at {conf.host}:{conf.port}")  
+        for e in _getEdges(conf, graph):
             click.echo(json.dumps(e, indent=2))
 
 
 @grip.command(name="backup")
 @grip_options
 @dir_options
-def backup_grip(host: str, port: int, graph: str, limit: int, vertex: bool, edge: bool, dir: Path):
+def backup_grip(host: str, port: int, graph: str, vertex: bool, edge: bool, dir: Path):
     """grip ➜ local"""
     conf = GripConfig(host=host, port=port)
 
@@ -97,12 +99,12 @@ def backup_grip(host: str, port: int, graph: str, limit: int, vertex: bool, edge
     dir.mkdir(parents=True, exist_ok=True)
 
     logging.debug(f"Backing up GRIP graph '{graph}' to directory '{dir}'")
-    _gripDump(conf, graph, limit, vertex, edge, dir)
+    _gripDump(conf, graph, vertex, edge, dir)
 
     # TODO: Better way to handle GRIP graph schemas?
     schema = f"{graph}__schema__"
     logging.debug(f"Backing up GRIP graph '{schema}' to directory '{dir}'")
-    _gripDump(conf, schema, limit, vertex, edge, dir)
+    _gripDump(conf, schema, vertex, edge, dir)
 
 
 @grip.command(name="restore")

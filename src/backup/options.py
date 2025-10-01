@@ -6,7 +6,12 @@ import click
 def grip_options(fn):
     options = [
         click.option(
-            "--edge", "--edges", "-e", is_flag=True, help="Output GRIP edges."
+            "--edge",
+            "--edges",
+            "-e",
+            is_flag=True,
+            default=True,
+            help="Output GRIP edges.",
         ),
         click.option("--graph", "-g", default="CALYPR", help="Name of the GRIP graph."),
         click.option(
@@ -16,14 +21,6 @@ def grip_options(fn):
             default="localhost",
             show_default=True,
             help="GRIP host ($GRIPHOST)",
-        ),
-        click.option(
-            "--limit",
-            "-l",
-            envvar="GRIP_LIMIT",
-            type=int,
-            default=10000,
-            help="Limit number of items listed.",
         ),
         click.option(
             "--port",
@@ -38,9 +35,9 @@ def grip_options(fn):
             "--vertices",
             "-v",
             is_flag=True,
+            default=True,
             help="Output GRIP vertices.",
         ),
-
     ]
     for option in reversed(options):
         fn = option(fn)
@@ -73,12 +70,6 @@ def pg_options(fn):
             default="postgres",
             show_default=True,
             help="Postgres username ($PGUSER)",
-        ),
-        click.option(
-            "--password",
-            "-P",
-            envvar="PGPASSWORD",
-            help="Postgres password ($PGPASSWORD)",
         ),
     ]
     for option in reversed(options):

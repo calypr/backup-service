@@ -32,7 +32,7 @@ class GripConfig:
     port: int
 
 
-def _getEdges(grip: GripConfig, graph: str, limit: int) -> list[str]:
+def _getEdges(grip: GripConfig, graph: str) -> list[str]:
     """
     Utility function to connect to Grip and list all edges.
     """
@@ -45,13 +45,13 @@ def _getEdges(grip: GripConfig, graph: str, limit: int) -> list[str]:
 
     G = c.graph(graph)
 
-    for i in G.query().E().limit(limit):
+    for i in G.query().E():
         edges.append(i)
 
     return edges
 
 
-def _getVertices(grip: GripConfig, graph: str, limit: int) -> list[str]:
+def _getVertices(grip: GripConfig, graph: str) -> list[str]:
     """
     Utility function to connect to Grip and list all vertices.
     """
@@ -62,7 +62,7 @@ def _getVertices(grip: GripConfig, graph: str, limit: int) -> list[str]:
 
     G = c.graph(graph)
 
-    for i in G.query().V().limit(limit):
+    for i in G.query().V():
         vertices.append(i)
 
     return vertices
@@ -83,7 +83,7 @@ def _connect(grip: GripConfig) -> gripql.Connection:
     return client
 
 
-def _dump(grip: GripConfig, graph: str, limit: int, vertex: bool, edge: bool, out: Path) -> None:
+def _dump(grip: GripConfig, graph: str, vertex: bool, edge: bool, out: Path) -> None:
     # Dump
     conn = _connect(grip)
     G = conn.graph(graph)
@@ -91,12 +91,12 @@ def _dump(grip: GripConfig, graph: str, limit: int, vertex: bool, edge: bool, ou
     # write vertex and edge objects from grip DB to file
     if vertex:
         with open(out / f"{graph}.vertices", "wb") as f:
-            for i in G.query().V().limit(limit):
+            for i in G.query().V():
                 f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
     if edge:
         with open(out / f"{graph}.edges", "wb") as f:
-            for i in G.query().E().limit(limit):
+            for i in G.query().E():
                 f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
     # TODO: At this point you will need to reconnect to the new grip instance to load the data that was dumped
