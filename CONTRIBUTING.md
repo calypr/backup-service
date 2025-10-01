@@ -44,7 +44,7 @@ Commands:
 
 | Command     | Example            |
 |-------------|--------------------|
-| List Graphs | `bak grip ls`      |
+| List Graphs | `bak pg ls`        |
 | Backup      | `bak grip backup`  |
 | Restore     | `bak grip restore` |
 
@@ -52,7 +52,7 @@ Commands:
 
 | Command      | Example           |
 |--------------|-------------------|
-| List backups | `bak s3 ls`       |
+| List backups | `bak pg ls`       |
 | Upload       | `bak s3 upload`   |
 | Download     | `bak s3 download` |
 

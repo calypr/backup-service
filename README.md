@@ -25,7 +25,26 @@ Data backup and recovery service for the CALYPR systems 🔄
 
 # 2. Quick Start ⚡
 
+> [!TIP]
+> The recommended use of the backup-service is through deploying to a K8s cluster for automated daily backups. 
+
 ```sh
+➜ helm repo add ohsu https://ohsu-comp-bio.github.io/helm-charts
+
+➜ helm upgrade --install backups ohsu/backups
+```
+
+# 3. CLI
+
+> [!TIP]
+> Manual backups (and restorations) can be done through the CLI
+
+```sh
+➜ git clone git@github.com:calypr/backup-service.git
+Cloning into 'backup-service'...
+
+➜ cd backup-service
+
 ➜ python3 -m venv venv && source venv/bin/activate
 
 ➜ pip install -r requirements.txt
@@ -49,7 +68,67 @@ Commands:
   upload    local ➜ S3
 ```
 
-# 3. Design + Examples 📐
+## Backup ⬆
+
+### Postgres Dump:
+
+```sh
+➜ bak pg dump \
+  --host localhost \
+  --port 5432 \
+  --user postgres \
+  --password PASSWORD \
+  --dir DIR
+```
+
+## GRIP Backup:
+
+```sh
+➜ bak grip backup
+```
+
+### S3 Upload:
+
+```sh
+➜ bak s3 upload \
+  --dir DIR \
+  --endpoint ENDPOINT \
+  --bucket BUCKET \
+  --key KEY \
+  --secret SECRET
+```
+
+## Restore ⬇
+
+### Postgres Restore:
+
+```sh
+➜ bak pg restore \
+  --host localhost \
+  --port 5432 \
+  --user postgres \
+  --password PASSWORD \
+  --dir DIR
+```
+
+## GRIP Restore:
+
+```sh
+➜ bak grip restore
+```
+
+### S3 Download:
+
+```sh
+➜ bak s3 download \
+  --dir DIR \
+  --endpoint ENDPOINT \
+  --bucket BUCKET \
+  --key KEY \
+  --secret SECRET
+```
+
+# 4. Design 📐
 
 ```mermaid
 sequenceDiagram
@@ -82,79 +161,7 @@ sequenceDiagram
 [indexd]: https://github.com/uc-cdis/indexd
 [requestor]: https://github.com/uc-cdis/requestor
 
-## Backup ⬆️
-
-### Postgres Dump:
-
-```sh
-➜ bak pg dump \
-  --host localhost \
-  --port 5432 \
-  --user postgres \
-  --password PASSWORD \
-  --dir DIR
-```
-
-## ElasticSearch Backup:
-
-```
-➜ bak es backup
-```
-
-## GRIP Backup:
-
-```sh
-➜ bak grip backup
-```
-
-### S3 Upload:
-
-```sh
-➜ bak s3 upload \
-  --dir DIR \
-  --endpoint ENDPOINT \
-  --bucket BUCKET \
-  --key KEY \
-  --secret SECRET
-```
-
-## Restore ⬇️
-
-### Postgres Restore:
-
-```sh
-➜ bak pg restore \
-  --host localhost \
-  --port 5432 \
-  --user postgres \
-  --password PASSWORD \
-  --dir DIR
-```
-
-## ElasticSearch Restore:
-
-```
-➜ bak es restore
-```
-
-## GRIP Restore:
-
-```sh
-➜ bak grip restore
-```
-
-### S3 Download:
-
-```sh
-➜ bak s3 download \
-  --dir DIR \
-  --endpoint ENDPOINT \
-  --bucket BUCKET \
-  --key KEY \
-  --secret SECRET
-```
-
-# 4. Alternatives 📖
+# 5. Alternatives 📖
 
 > [!TIP]
 > The alternative options below work on the K8s resources themseleves (e.g. PVC/PV) as opposed to database resources (e.g. Postgres tables, ElasticSearch indices)
