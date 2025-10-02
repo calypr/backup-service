@@ -45,7 +45,7 @@ def _getEdges(grip: GripConfig, graph: str) -> list[str]:
 
     G = c.graph(graph)
 
-    for i in G.query().E():
+    for i in G.E():
         edges.append(i)
 
     return edges
@@ -62,7 +62,7 @@ def _getVertices(grip: GripConfig, graph: str) -> list[str]:
 
     G = c.graph(graph)
 
-    for i in G.query().V():
+    for i in G.V():
         vertices.append(i)
 
     return vertices
@@ -91,12 +91,12 @@ def _dump(grip: GripConfig, graph: str, vertex: bool, edge: bool, out: Path) -> 
     # write vertex and edge objects from grip DB to file
     if vertex:
         with open(out / f"{graph}.vertices", "wb") as f:
-            for i in G.query().V():
+            for i in G.V():
                 f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
     if edge:
         with open(out / f"{graph}.edges", "wb") as f:
-            for i in G.query().E():
+            for i in G.E():
                 f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
     # TODO: At this point you will need to reconnect to the new grip instance to load the data that was dumped
@@ -132,7 +132,7 @@ def _restore(grip: GripConfig, graph: str, dir: Path):
             _to = data["_to"]
             _from = data["_from"]
             del data["_id"], data["_label"], data["_to"], data["_from"]
-            bulkE.addEdge(_to, _from, _label, data=data, gid=_id)
+            bulkE.addEdge(_to, _from, _label, data=data, id=_id)
             count += 1
             if count % 10000 == 0:
                 print("loaded %d edges" % count)
