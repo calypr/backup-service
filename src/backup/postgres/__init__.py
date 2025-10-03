@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from psycopg2.extensions import connection
 import logging
+import os
 import psycopg2
 import shutil
 import subprocess
@@ -90,10 +91,12 @@ def _dump(pgConfig: PGConfig, db: str, dir: Path) -> Path:
                 stdout=out,
                 stderr=subprocess.PIPE,
                 check=True,
-                env=env,
+                env=os.environ.copy(),
             )
         except subprocess.CalledProcessError as e:
-            logging.error(f"Error dumping database '{db}': {e}, stderr: {e.stderr.decode() if e.stderr else ''}")
+            logging.error(
+                f"Error dumping database '{db}': {e}, stderr: {e.stderr.decode() if e.stderr else ''}"
+            )
             raise
 
     return dump
@@ -108,7 +111,6 @@ def _restore(pgConfig: PGConfig, db: str, dir: Path) -> Path:
     if not dump.exists():
         logging.error(f"Dump file {dump} does not exist")
         raise FileNotFoundError(f"Dump file {dump} does not exist")
-
 
     if not shutil.which("pg_restore"):
         logging.error("pg_restore not found in PATH")
