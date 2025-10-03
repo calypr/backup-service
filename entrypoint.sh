@@ -25,5 +25,5 @@ bak --debug s3 upload \
     --dir "${DIR}" \
     --endpoint "${ENDPOINT}" \
     --bucket "${BUCKET}" \
-    --key "${KEY}" \
-    --secret "${SECRET}"
+    --key "${ACCESS_KEY}" \
+    --secret "${SECRET_KEY}"
