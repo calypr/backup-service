@@ -9,8 +9,7 @@ export DIR="${DIR}/${TIMESTAMP}"
 bak --debug pg dump \
     --dir "${DIR}" \
     --host "${PGHOST}" \
-    --user "${PGUSER}" \
-    --password "${PGPASSWORD}"
+    --user "${PGUSER}"
 
 # GRIP Backup
 bak --debug grip backup \
