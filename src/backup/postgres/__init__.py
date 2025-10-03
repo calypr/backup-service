@@ -14,7 +14,6 @@ class PGConfig:
     host: str
     port: int
     user: str
-    password: str
 
 
 def _connect(pgConfig: PGConfig) -> connection:
@@ -24,12 +23,10 @@ def _connect(pgConfig: PGConfig) -> connection:
     assert pgConfig.host, "Host must not be empty"
     assert pgConfig.port, "Port must not be empty"
     assert pgConfig.user, "User must not be empty"
-    assert pgConfig.password, "Password must not be empty"
 
     try:
         connection = psycopg2.connect(
             user=pgConfig.user,
-            password=pgConfig.password,
             host=pgConfig.host,
             port=pgConfig.port,
         )
@@ -79,9 +76,6 @@ def _dump(pgConfig: PGConfig, db: str, dir: Path) -> Path:
         "--format=c",
         "--no-password",
     ]
-
-    # Set the environment variable for the password
-    env = {"PGPASSWORD": pgConfig.password}
 
     # Dump File
     dump = Path(f"{dir}/{db}.sql")

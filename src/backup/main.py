@@ -56,7 +56,7 @@ def cli(verbose: bool):
     )
 
     # Avoid INFO and ElasticsearchWarning logging from the elasticsearch logger
-    # https://stackoverflow.com/a/47157553
+    # ref: https://stackoverflow.com/a/47157553
     logging.getLogger("elastic_transport.transport").setLevel(logging.CRITICAL)
     warnings.simplefilter("ignore", ElasticsearchWarning)
 
@@ -125,9 +125,9 @@ def pg():
 
 @pg.command(name="ls")
 @pg_options
-def listDbs(host: str, port: int, user: str, password: str):
+def listDbs(host: str, port: int, user: str):
     """list databases"""
-    conf = PGConfig(host=host, port=port, user=user, password=password)
+    conf = PGConfig(host=host, port=port, user=user)
 
     dbs = _getDbs(conf)
     if not dbs:
@@ -142,9 +142,9 @@ def listDbs(host: str, port: int, user: str, password: str):
 @pg.command(name="dump")
 @pg_options
 @dir_options
-def dump_postgres(host: str, port: int, user: str, password: str, dir: Path):
+def dump_postgres(host: str, port: int, user: str, dir: Path):
     """postgres ➜ local"""
-    conf = PGConfig(host=host, port=port, user=user, password=password)
+    conf = PGConfig(host=host, port=port, user=user)
 
     # Dump directory
     dir.mkdir(parents=True, exist_ok=True)
@@ -163,9 +163,9 @@ def dump_postgres(host: str, port: int, user: str, password: str, dir: Path):
 @pg.command(name="restore")
 @pg_options
 @dir_options
-def restore_postgres(host: str, port: int, user: str, password: str, dir: Path):
+def restore_postgres(host: str, port: int, user: str, dir: Path):
     """local ➜ postgres"""
-    conf = PGConfig(host=host, port=port, user=user, password=password)
+    conf = PGConfig(host=host, port=port, user=user)
 
     dbs = _getDbs(conf)
     if not dbs:
