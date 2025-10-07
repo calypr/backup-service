@@ -1,7 +1,11 @@
 # Backup build
 FROM python:slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client libpq-dev gcc
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  build-essential \
+  gcc \
+  libpq-dev \ 
+  postgresql-client
 
 WORKDIR /app
 
