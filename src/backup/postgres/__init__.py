@@ -30,6 +30,7 @@ def _connect(pgConfig: PGConfig) -> connection:
             user=pgConfig.user,
             host=pgConfig.host,
             port=pgConfig.port,
+            password=os.getenv("PGPASSWORD"),
         )
     except Exception as err:
         logging.error(f"Error connecting to Postgres: {err}")

@@ -10,7 +10,7 @@ def grip_options(fn):
             "--edges",
             "-e",
             is_flag=True,
-            default=True,
+            default=False,
             help="Output GRIP edges.",
         ),
         click.option("--graph", "-g", default="CALYPR", help="Name of the GRIP graph."),
@@ -35,7 +35,7 @@ def grip_options(fn):
             "--vertices",
             "-v",
             is_flag=True,
-            default=True,
+            default=False,
             help="Output GRIP vertices.",
         ),
     ]

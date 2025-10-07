@@ -88,15 +88,23 @@ def _dump(grip: GripConfig, graph: str, vertex: bool, edge: bool, out: Path) -> 
     conn = _connect(grip)
     G = conn.graph(graph)
 
+    # Run single query to get all vertices
+    # Rather than G.V() and G.V().outE()
+    vertices = G.V()
+
     # write vertex and edge objects from grip DB to file
     if vertex:
         with open(out / f"{graph}.vertices", "wb") as f:
-            for i in G.V():
+            for i in vertices:
                 f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
     if edge:
         with open(out / f"{graph}.edges", "wb") as f:
-            for i in G.E():
+            # Note:
+            #   Using G.V().outE() here to return all edges
+            #   G.V().BothE() would return duplicate edges (outbound and inbound)
+            #   Ref: https://github.com/bmeg/grip/blob/0.8.0/conformance/tests/ot_basic.py#L129-L140
+            for i in vertices.outE():
                 f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
     # TODO: At this point you will need to reconnect to the new grip instance to load the data that was dumped
