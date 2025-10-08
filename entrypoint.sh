@@ -16,6 +16,7 @@ bak --debug grip backup \
     --dir "${DIR}" \
     --host "${GRIP_HOST}" \
     --graph "${GRIP_GRAPH}" \
+    --vertex \
     --edge
 
 # S3 Upload
@@ -25,3 +26,8 @@ bak --debug s3 upload \
    --bucket "${BUCKET}" \
    --key "${ACCESS_KEY}" \
    --secret "${SECRET_KEY}"
+
+echo "Backup Complete:"
+echo "- ENDPOINT: ${ENDPOINT}"
+echo "- BUCKET: ${BUCKET}"
+echo "- DIR: ${DIR}"
