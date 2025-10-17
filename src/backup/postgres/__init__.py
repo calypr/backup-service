@@ -142,4 +142,11 @@ def _restore(pgConfig: PGConfig, db: str, dir: Path) -> Path:
         return dump
 
     except subprocess.CalledProcessError as e:
-        raise
+        stdout = e.stdout.decode(errors="replace") if e.stdout else ""
+        stderr = e.stderr.decode(errors="replace") if e.stderr else ""
+        logging.error(
+            f"Error restoring database '{db}': returncode={e.returncode}; stdout={stdout}; stderr={stderr}"
+        )
+        raise RuntimeError(
+            f"pg_restore failed for '{db}': returncode={e.returncode}; stdout={stdout}; stderr={stderr}"
+        ) from e
