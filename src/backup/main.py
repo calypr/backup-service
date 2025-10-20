@@ -78,12 +78,16 @@ def list_grip(host: str, port: int, graph: str, vertex: bool, edge: bool):
     conf = GripConfig(host=host, port=port)
 
     if vertex:
-        logging.debug(f"Listing vertices from GRIP graph '{graph}' at {conf.host}:{conf.port}")
+        logging.debug(
+            f"Listing vertices from GRIP graph '{graph}' at {conf.host}:{conf.port}"
+        )
         for v in _getVertices(conf, graph):
             click.echo(json.dumps(v, indent=2))
 
     if edge:
-        logging.debug(f"Listing edges from GRIP graph '{graph}' at {conf.host}:{conf.port}")  
+        logging.debug(
+            f"Listing edges from GRIP graph '{graph}' at {conf.host}:{conf.port}"
+        )
         for e in _getEdges(conf, graph):
             click.echo(json.dumps(e, indent=2))
 
@@ -110,7 +114,7 @@ def backup_grip(host: str, port: int, graph: str, vertex: bool, edge: bool, dir:
 @grip.command(name="restore")
 @grip_options
 @dir_options
-def restore_grip(host: str, port: int, graph: str, dir: Path):
+def restore_grip(host: str, port: int, graph: str, vertex: bool, edge: bool, dir: Path):
     """local ➜ grip"""
     conf = GripConfig(host=host, port=port)
 

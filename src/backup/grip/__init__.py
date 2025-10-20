@@ -45,7 +45,7 @@ def _getEdges(grip: GripConfig, graph: str) -> list[str]:
 
     G = c.graph(graph)
 
-    for i in G.E():
+    for i in G.V().outE():
         edges.append(i)
 
     return edges
@@ -116,7 +116,7 @@ def _restore(grip: GripConfig, graph: str, dir: Path):
     G = conn.graph(graph)
 
     bulkV = G.bulkAdd()
-    with open("grip.vertices", "rb") as f:
+    with open(dir / f"{graph}.vertices", "rb") as f:
         count = 0
         for i in f:
             data = orjson.loads(i)
@@ -131,7 +131,7 @@ def _restore(grip: GripConfig, graph: str, dir: Path):
     print("Vertices load res: ", str(err))
 
     bulkE = G.bulkAdd()
-    with open("grip.edges", "rb") as f:
+    with open(dir / f"{graph}.edges", "rb") as f:
         count = 0
         for i in f:
             data = orjson.loads(i)
