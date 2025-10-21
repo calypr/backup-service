@@ -20,8 +20,6 @@ from backup.s3 import (
 )
 from backup.options import (
     dir_options,
-    pg_options,
-    s3_options,
 )
 
 

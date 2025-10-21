@@ -16,7 +16,6 @@ def s3_options(fn):
         click.option(
             "--endpoint",
             "-e",
-            default="https://s3.amazonaws.com",
             show_default=True,
             help="S3 endpoint URL",
         ),

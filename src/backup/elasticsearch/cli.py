@@ -102,63 +102,6 @@ def ls(host: str, port: int, user: str, password: str):
         click.echo(index)
 
 
-@es.command(name="ls-repo")  # New command for listing repositories
-@es_options
-def listRepos(host: str, port: int, user: str, password: str):
-    """list snapshot repositories"""
-    esConfig = ESConfig(host=host, port=port, user=user, password=password)
-
-    repos = _getRepos(esConfig)
-    if not repos:
-        logging.warning(
-            f"No snapshot repositories found at {esConfig.host}:{esConfig.port}"
-        )
-        return
-
-    # List repositories
-    for repo in repos:
-        click.echo(repo)
-
-
-@es.command(name="init-repo")  # New command for initializing a repository
-@es_options
-@s3_options
-@click.option(
-    "--repo-name",
-    "-r",
-    required=True,
-    help="Name of the Elasticsearch snapshot repository to initialize.",
-)
-def initRepo(
-    host: str,
-    port: int,
-    user: str,
-    password: str,
-    repo_name: str,
-    endpoint: str,
-    bucket: str,
-    key: str,
-    secret: str,
-):
-    """initialize a snapshot repository"""
-    # Create ElasticSearchConfig including S3 endpoint and bucket for repository creation
-    esConfig = ESConfig(
-        host=host,
-        port=port,
-        user=user,
-        password=password,
-        repo=repo_name,
-        endpoint=endpoint,
-        bucket=bucket,
-    )
-
-    success = _initRepo(esConfig)
-    if success:
-        click.echo(f"Repository '{repo_name}' initialized successfully.")
-    else:
-        logging.error(f"Failed to initialize repository '{repo_name}'.")
-
-
 @es.command()
 @es_options
 def backup(host: str, port: int, user: str, password: str):
@@ -192,3 +135,65 @@ def restore(host: str, port: int, user: str, password: str, snapshot: str):
     # Restore indices
     for index in indices:
         _ = _esRestore(esConfig, index, snapshot)
+
+
+@es.group()
+def repo():
+    """Commands for managing snapshot repositories."""
+    pass
+
+
+@repo.command(name="ls")
+@es_options
+def listRepos(host: str, port: int, user: str, password: str):
+    """list snapshot repositories"""
+    esConfig = ESConfig(host=host, port=port, user=user, password=password)
+
+    repos = _getRepos(esConfig)
+    if not repos:
+        logging.warning(
+            f"No snapshot repositories found at {esConfig.host}:{esConfig.port}"
+        )
+        return
+
+    # List repositories
+    for repo in repos:
+        click.echo(repo)
+
+
+@repo.command(name="init")
+@es_options
+@s3_options
+@click.option(
+    "--repo-name",
+    "-r",
+    required=True,
+    help="Name of the Elasticsearch snapshot repository to initialize.",
+)
+def initRepo(
+    host: str,
+    port: int,
+    user: str,
+    password: str,
+    repo_name: str,
+    endpoint: str,
+    bucket: str,
+):
+    """initialize a snapshot repository"""
+    # Create ElasticSearchConfig including S3 endpoint and bucket for repository creation
+    esConfig = ESConfig(
+        host=host,
+        port=port,
+        user=user,
+        password=password,
+        repo=repo_name,
+        endpoint=endpoint,
+        bucket=bucket,
+    )
+
+    success = _initRepo(esConfig)
+    if success:
+        click.echo(f"Repository '{repo_name}' initialized successfully.")
+    else:
+        logging.error(f"Failed to initialize repository '{repo_name}'.")
+
