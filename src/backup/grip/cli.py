@@ -1,5 +1,6 @@
 from backup.grip import (
     GripConfig,
+    _getGraphs,
     _getEdges,
     _getVertices,
     _dump as _gripDump,
@@ -7,12 +8,61 @@ from backup.grip import (
 )
 from backup.options import (
     dir_options,
-    grip_options,
 )
 from pathlib import Path
 import click
 import logging
 import json
+
+
+# GRIP Flags
+def grip_options(fn):
+    options = [
+        click.option(
+            "--host",
+            "-H",
+            envvar="GRIP_HOST",
+            default="localhost",
+            show_default=True,
+            help="GRIP host ($GRIPHOST)",
+        ),
+        click.option(
+            "--port",
+            "-p",
+            envvar="GRIP_PORT",
+            default=8201,
+            show_default=True,
+            help="GRIP port ($GRIP_PORT)",
+        ),
+    ]
+    for option in reversed(options):
+        fn = option(fn)
+    return fn
+
+# GRIP Graph Flags
+def grip_graph_options(fn):
+    options = [
+        click.option(
+            "--edge",
+            "--edges",
+            "-e",
+            is_flag=True,
+            default=False,
+            help="Output GRIP edges.",
+        ),
+        click.option("--graph", "-g", default="CALYPR", help="Name of the GRIP graph."),
+        click.option(
+            "--vertex",
+            "--vertices",
+            "-v",
+            is_flag=True,
+            default=False,
+            help="Output GRIP vertices.",
+        ),
+    ]
+    for option in reversed(options):
+        fn = option(fn)
+    return fn
 
 
 @click.group()
@@ -23,23 +73,12 @@ def grip():
 
 @grip.command()
 @grip_options
-def ls(host: str, port: int, graph: str, vertex: bool, edge: bool):
+def ls(host: str, port: int):
     """list GRIP vertices and/or edges"""
     conf = GripConfig(host=host, port=port)
 
-    if vertex:
-        logging.debug(
-            f"Listing vertices from GRIP graph '{graph}' at {conf.host}:{conf.port}"
-        )
-        for v in _getVertices(conf, graph):
-            click.echo(json.dumps(v, indent=2))
-
-    if edge:
-        logging.debug(
-            f"Listing edges from GRIP graph '{graph}' at {conf.host}:{conf.port}"
-        )
-        for e in _getEdges(conf, graph):
-            click.echo(json.dumps(e, indent=2))
+    for v in _getGraphs(conf):
+        click.echo(json.dumps(v, indent=2))
 
 
 @grip.command()
@@ -64,7 +103,7 @@ def backup(host: str, port: int, graph: str, vertex: bool, edge: bool, dir: Path
 @grip.command()
 @grip_options
 @dir_options
-def restore(host: str, port: int, graph: str, vertex: bool, edge: bool, dir: Path):
+def restore(host: str, port: int, graph: str, dir: Path):
     """local ➜ grip"""
     conf = GripConfig(host=host, port=port)
 

@@ -32,6 +32,23 @@ class GripConfig:
     port: int
 
 
+def _getGraphs(grip: GripConfig) -> list[str]:
+    """
+    Utility function to connect to Grip and list all graphs.
+    """
+
+    # Connect to Grip
+    c = _connect(grip)
+
+    # List Graphs
+    graphs = []
+
+    for g in c.listGraphs():
+        graphs.append(g)
+
+    return graphs
+
+
 def _getEdges(grip: GripConfig, graph: str) -> list[str]:
     """
     Utility function to connect to Grip and list all edges.

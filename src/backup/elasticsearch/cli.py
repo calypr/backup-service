@@ -8,11 +8,76 @@ from backup.elasticsearch import (
 )
 from backup.options import (
     dir_options,
-    es_options,
+)
+from backup.s3.cli import (
     s3_options,
+    S3Config,
 )
 import click
 import logging
+
+
+# ElasticSearch Flags
+def es_options(fn):
+    options = [
+        click.option(
+            "--host",
+            "-H",
+            envvar="ES_HOST",
+            default="localhost",
+            show_default=True,
+            help="ElasticSearch host ($ES_HOST)",
+        ),
+        click.option(
+            "--port",
+            "-p",
+            envvar="ES_PORT",
+            default=9200,
+            show_default=True,
+            help="ElasticSearch port ($ES_PORT)",
+        ),
+        click.option(
+            "--user",
+            "-u",
+            envvar="ES_USER",
+            default="elastic",
+            show_default=True,
+            help="ElasticSearch username ($ES_USER)",
+        ),
+        click.option(
+            "--password",
+            "-P",
+            envvar="ES_PASSWORD",
+            help="ElasticSearch password ($ES_PASSWORD)",
+        ),
+        # click.option(
+        #     "--repo",
+        #     "-r",
+        #     envvar="ES_REPO",
+        #     default="backup_repo",
+        #     show_default=True,
+        #     help="ElasticSearch snapshot repository name ($ES_REPO)",
+        # ),
+        # click.option(
+        #     "--bucket",
+        #     "-b",
+        #     envvar="ES_BUCKET",
+        #     default="backup_bucket",
+        #     show_default=True,
+        #     help="S3 bucket name for ElasticSearch backups ($ES_BUCKET)",
+        # ),
+        # click.option(
+        #     "--endpoint",
+        #     "-e",
+        #     envvar="ES_ENDPOINT",
+        #     default="https://s3.amazonaws.com",
+        #     show_default=True,
+        #     help="S3 endpoint URL for ElasticSearch backups ($ES_ENDPOINT)",
+        # ),
+    ]
+    for option in reversed(options):
+        fn = option(fn)
+    return fn
 
 
 @click.group()

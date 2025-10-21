@@ -6,11 +6,43 @@ from backup.postgres import (
 )
 from backup.options import (
     dir_options,
-    pg_options,
 )
 import click
 import logging
 from pathlib import Path
+
+
+# Postgres Flags
+def pg_options(fn):
+    options = [
+        click.option(
+            "--host",
+            "-H",
+            envvar="PGHOST",
+            default="localhost",
+            show_default=True,
+            help="Postgres host ($PGHOST)",
+        ),
+        click.option(
+            "--port",
+            "-p",
+            envvar="PGPORT",
+            default=5432,
+            show_default=True,
+            help="Postgres port ($PGPORT)",
+        ),
+        click.option(
+            "--user",
+            "-u",
+            envvar="PGUSER",
+            default="postgres",
+            show_default=True,
+            help="Postgres username ($PGUSER)",
+        ),
+    ]
+    for option in reversed(options):
+        fn = option(fn)
+    return fn
 
 
 @click.group()

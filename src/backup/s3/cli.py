@@ -5,10 +5,35 @@ from backup.s3 import (
 )
 from backup.options import (
     dir_options,
-    s3_options,
 )
 import click
 from pathlib import Path
+
+
+# S3 Flags
+def s3_options(fn):
+    options = [
+        click.option(
+            "--endpoint",
+            "-e",
+            default="https://s3.amazonaws.com",
+            show_default=True,
+            help="S3 endpoint URL",
+        ),
+        click.option("--bucket", "-b", required=True, help="S3 bucket name"),
+        click.option(
+            "--key", "-k", envvar="ACCESS_KEY", help="S3 access key ID ($ACCESS_KEY)"
+        ),
+        click.option(
+            "--secret",
+            "-s",
+            envvar="SECRET_KEY",
+            help="S3 secret access key ($SECRET_KEY)",
+        ),
+    ]
+    for option in options:
+        fn = option(fn)
+    return fn
 
 
 @click.group()
@@ -20,17 +45,8 @@ def s3():
 @s3.command()
 @s3_options
 def ls(endpoint: str, bucket: str, key: str, secret: str):
-    """list S3 bucket contents"""
-    conf = S3Config(endpoint=endpoint, bucket=bucket, key=key, secret=secret)
-
-    objects = _getObjects(conf)
-    if not objects:
-        click.echo(f"No objects found in bucket '{bucket}'.")
-        return
-
-    # List objects
-    for obj in objects:
-        click.echo(obj)
+    # TODO: Implement
+    pass
 
 
 @s3.command()
