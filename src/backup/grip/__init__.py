@@ -128,6 +128,9 @@ def _dump(grip: GripConfig, graph: str, vertex: bool, edge: bool, out: Path) -> 
 
 
 def _restore(grip: GripConfig, graph: str, dir: Path):
+    ## Clean/Delete existing graph
+    ## GRIP initdb job (templates/post-install)
+
     ## Load
     conn = _connect(grip)
     G = conn.graph(graph)

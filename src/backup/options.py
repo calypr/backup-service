@@ -4,7 +4,7 @@ import click
 # Common CLI Options for all subcommand
 
 # Output/intput directory flags
-dir_options = click.option(
+dir_flags = click.option(
     "--dir",
     "-d",
     default=Path("."),

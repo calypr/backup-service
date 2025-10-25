@@ -1,8 +1,32 @@
 from dataclasses import dataclass
 import logging
-from pathlib import Path
-import subprocess
+import click
 from elasticsearch import Elasticsearch
+
+
+# ElasticSearch Flags
+def es_flags(fn):
+    options = [
+        click.option(
+            "--host",
+            "-H",
+            envvar="ES_HOST",
+            default="localhost",
+            show_default=True,
+            help="ElasticSearch host ($ES_HOST)",
+        ),
+        click.option(
+            "--port",
+            "-p",
+            envvar="ES_PORT",
+            default=9200,
+            show_default=True,
+            help="ElasticSearch port ($ES_PORT)",
+        ),
+    ]
+    for option in reversed(options):
+        fn = option(fn)
+    return fn
 
 
 @dataclass
@@ -11,8 +35,7 @@ class ESConfig:
 
     host: str
     port: int
-    user: str
-    password: str
+
     # Backup repo
     # https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/self-managed
     repo: str = ""
@@ -50,44 +73,7 @@ def _getIndices(esConfig: ESConfig) -> list[str]:
     return indices
 
 
-def _getRepos(esConfig: ESConfig) -> list[str] | None:
-    """
-    Utility function to connect to ElasticSearch and list all snapshot repositories.
-    """
-    elastic = _connect(esConfig)
-
-    try:
-        repos = elastic.snapshot.get_repository(name="_all")  # Get all repositories
-        repo_names = list(repos.keys())  # Extract just the names
-        return repo_names
-    except Exception as err:
-        logging.error(f"Error listing Elasticsearch repositories: {err}")
-        return None
-
-
-def _initRepo(esConfig: ESConfig) -> bool:
-    """
-    Initializes a snapshot repository in ElasticSearch.
-    """
-    elastic = _connect(esConfig)
-
-    # Create the repository
-    elastic.snapshot.create_repository(
-        name=esConfig.repo,
-        body={
-            "type": "s3",
-            "endpoint": esConfig.endpoint,
-            "bucket": esConfig.bucket,
-            "base_path": esConfig.repo,
-            "access_key": esConfig.user,
-            "secret_key": esConfig.password,
-        },
-    )
-    logging.info(f"Repository '{esConfig.repo}' created successfully.")
-    return True
-
-
-def _dump(esConfig: ESConfig, index: str):
+def _dump(esConfig: ESConfig, index: str) -> str | None:
     """
     Creates a snapshot of a single index using Elasticsearch Snapshot API.
     """
@@ -99,7 +85,7 @@ def _dump(esConfig: ESConfig, index: str):
 
     response = elastic.snapshot.create(
         repository=esConfig.repo,
-        snapshot=f"{index}",
+        snapshot=index,
         wait_for_completion=True,
     )
 

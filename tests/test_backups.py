@@ -19,9 +19,12 @@ from backup.s3 import (
     _upload,
 )
 from backup.options import (
-    dir_options,
+    dir_flags,
 )
 
+# TODO: This "end-to-end" test file still needs to be implemented with:
+# - Backups
+# - Restores
 
 def testConnect(testPostgres):
     """

@@ -5,7 +5,7 @@ from backup.postgres import (
     _restore as _pgRestore,
 )
 from backup.options import (
-    dir_options,
+    dir_flags,
 )
 import click
 import logging
@@ -13,7 +13,7 @@ from pathlib import Path
 
 
 # Postgres Flags
-def pg_options(fn):
+def pg_flags(fn):
     options = [
         click.option(
             "--host",
@@ -52,7 +52,7 @@ def pg():
 
 
 @pg.command()
-@pg_options
+@pg_flags
 def ls(host: str, port: int, user: str):
     """list databases"""
     conf = PGConfig(host=host, port=port, user=user)
@@ -68,8 +68,8 @@ def ls(host: str, port: int, user: str):
 
 
 @pg.command()
-@pg_options
-@dir_options
+@pg_flags
+@dir_flags
 def dump(host: str, port: int, user: str, dir: Path):
     """postgres ➜ local"""
     conf = PGConfig(host=host, port=port, user=user)
@@ -89,8 +89,8 @@ def dump(host: str, port: int, user: str, dir: Path):
 
 
 @pg.command()
-@pg_options
-@dir_options
+@pg_flags
+@dir_flags
 def restore(host: str, port: int, user: str, dir: Path):
     """local ➜ postgres"""
     conf = PGConfig(host=host, port=port, user=user)

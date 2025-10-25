@@ -7,7 +7,7 @@ from backup.grip import (
     _restore as _gripRestore,
 )
 from backup.options import (
-    dir_options,
+    dir_flags,
 )
 from pathlib import Path
 import click
@@ -16,7 +16,7 @@ import json
 
 
 # GRIP Flags
-def grip_options(fn):
+def grip_host_flags(fn):
     options = [
         click.option(
             "--host",
@@ -40,25 +40,26 @@ def grip_options(fn):
     return fn
 
 # GRIP Graph Flags
-def grip_graph_options(fn):
+def grip_flags(fn):
     options = [
-        click.option(
-            "--edge",
-            "--edges",
-            "-e",
-            is_flag=True,
-            default=False,
-            help="Output GRIP edges.",
-        ),
-        click.option("--graph", "-g", default="CALYPR", help="Name of the GRIP graph."),
-        click.option(
-            "--vertex",
-            "--vertices",
-            "-v",
-            is_flag=True,
-            default=False,
-            help="Output GRIP vertices.",
-        ),
+        click.option("--graph", "-g", default="CALYPR", help="Name of the GRIP graph."), 
+        # click.option(
+        #     "--edge",
+        #     "--edges",
+        #     "-e",
+        #     is_flag=True,
+        #     default=False,
+        #     help="Output GRIP edges.",
+        # ),
+        # click.option("--graph", "-g", default="CALYPR", help="Name of the GRIP graph."),
+        # click.option(
+        #     "--vertex",
+        #     "--vertices",
+        #     "-v",
+        #     is_flag=True,
+        #     default=False,
+        #     help="Output GRIP vertices.",
+        # ),
     ]
     for option in reversed(options):
         fn = option(fn)
@@ -72,7 +73,7 @@ def grip():
 
 
 @grip.command()
-@grip_options
+@grip_host_flags
 def ls(host: str, port: int):
     """list GRIP vertices and/or edges"""
     conf = GripConfig(host=host, port=port)
@@ -82,8 +83,8 @@ def ls(host: str, port: int):
 
 
 @grip.command()
-@grip_options
-@dir_options
+@grip_host_flags
+@dir_flags
 def backup(host: str, port: int, graph: str, vertex: bool, edge: bool, dir: Path):
     """grip ➜ local"""
     conf = GripConfig(host=host, port=port)
@@ -101,8 +102,9 @@ def backup(host: str, port: int, graph: str, vertex: bool, edge: bool, dir: Path
 
 
 @grip.command()
-@grip_options
-@dir_options
+@grip_host_flags
+@grip_flags
+@dir_flags
 def restore(host: str, port: int, graph: str, dir: Path):
     """local ➜ grip"""
     conf = GripConfig(host=host, port=port)
