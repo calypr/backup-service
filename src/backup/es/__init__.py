@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import logging
+import sys
 import click
 from elasticsearch import Elasticsearch
 
@@ -63,13 +64,63 @@ def _connect(esConfig: ESConfig) -> Elasticsearch:
 
 def _getIndices(esConfig: ESConfig) -> list[str]:
     """
-    Utiltity function to connect to ElasticSearch and list all indices.
+    Utiltity function to list all indices.
     """
     elastic = _connect(esConfig)
 
     # Get all indices using the cat.indices() method
     indices = elastic.cat.indices(h="index").splitlines()
 
+    # Remove unused '.geoip_databases' to avoid `400` error during snapshot
+    # https://www.elastic.co/docs/reference/enrich-processor/geoip-processor
+    if ".geoip_databases" in indices:
+        indices.remove(".geoip_databases")
+
+    return indices
+
+
+def _getRepos(esConfig: ESConfig) -> list[str]:
+    """
+    Utiltity function to list all repos
+    """
+    elastic = _connect(esConfig)
+
+    repos = elastic.cat.repositories().splitlines()
+
+    return repos
+
+
+def _getSnapshots(esConfig: ESConfig, repo: str) -> list[str]:
+    """
+    Utiltity function to list all snapshots in a given repository.
+    """
+    elastic = _connect(esConfig)
+
+    snapshots = elastic.snapshot.get(
+        repository=repo,
+        snapshot="_all",
+    )["snapshots"]
+
+    snapshot_names = [snap["snapshot"] for snap in snapshots]
+
+    return snapshot_names
+
+
+def _getSnapshotIndices(esConfig: ESConfig, repo: str, snapshot: str) -> list[str]:
+    """
+    Utiltity function to list all indices in all snapshots in a given repository.
+    """
+    elastic = _connect(esConfig)
+
+    snapshots = elastic.snapshot.get(
+        repository=repo,
+        snapshot=snapshot,
+    )["snapshots"]
+
+    indices = []
+    for snap in snapshots:
+        indices.extend(snap.get("indices", []))
+    
     # Remove unused '.geoip_databases' to avoid `400` error during snapshot
     # https://www.elastic.co/docs/reference/enrich-processor/geoip-processor
     if ".geoip_databases" in indices:
@@ -107,8 +158,21 @@ def _snapshot(esConfig: ESConfig, indices: list[str], snapshot: str) -> str | No
 def _restore(esConfig: ESConfig, indices: list[str], snapshot: str) -> str | None:
     """
     Restores a single index from a snapshot using Elasticsearch Snapshot API.
+    If the indices do not exist, they will be created before restoring.
     """
     elastic = _connect(esConfig)
+
+    # Check if indices exist
+    existing_indices = _getIndices(esConfig)
+
+    for index in indices:
+        if index not in existing_indices:
+            # Create the index if it doesn't exist
+            logging.info(f"Index '{index}' does not exist. Creating it before restore.")
+            elastic.indices.create(index=index)
+
+    # Close indices before restore
+    elastic.indices.close(index=",".join(indices))
 
     response = elastic.snapshot.restore(
         repository=esConfig.repo,

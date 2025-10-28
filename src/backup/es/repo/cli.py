@@ -30,7 +30,7 @@ def repo():
 @repo.command(name="ls")
 @es_flags
 def listRepos(host: str, port: int):
-    """list snapshot repositories"""
+    """List snapshot repositories"""
     esConfig = ESConfig(host=host, port=port)
 
     repos = _getRepos(esConfig)
@@ -49,14 +49,9 @@ def listRepos(host: str, port: int):
 @es_flags
 @es_repo_flags
 @s3_flags
-def initRepo(
-    host: str,
-    port: int,
-    repo: str,
-    endpoint: str,
-    bucket: str,
-):
-    """initialize a snapshot repository"""
+def initRepo(host: str, port: int, repo: str, endpoint: str, bucket: str):
+    """Initialize a snapshot repository"""
+
     # Create ElasticSearchConfig including S3 endpoint and bucket for repository creation
     esConfig = ESConfig(
         host=host,
@@ -66,6 +61,7 @@ def initRepo(
         bucket=bucket,
     )
 
+    # TODO: Add readonly flag to for restore operations
     success = _initRepo(esConfig)
     if success:
         click.echo(f"Repository '{repo}' initialized successfully.")
@@ -82,13 +78,8 @@ def initRepo(
     default=False,
     help="Force/confirm deletion of the repository.",
 )
-def deleteRepo(
-    host: str,
-    port: int,
-    repo: str,
-    force: bool
-):
-    """initialize a snapshot repository"""
+def deleteRepo(host: str, port: int, repo: str, force: bool):
+    """Initialize a snapshot repository"""
     # Create ElasticSearchConfig including S3 endpoint and bucket for repository creation
     esConfig = ESConfig(
         host=host,
