@@ -1,5 +1,5 @@
 import logging
-from backup.elasticsearch import ESConfig, _connect
+from backup.es import ESConfig, _connect
 
 
 def _getRepos(esConfig: ESConfig) -> list[str] | None:
@@ -36,5 +36,25 @@ def _initRepo(esConfig: ESConfig) -> bool:
     )
 
     logging.info(f"Repository '{esConfig.repo}' created successfully.")
+
+    return True
+
+
+def _deleteRepo(esConfig: ESConfig, force: bool) -> bool:
+    """
+    Initializes a snapshot repository in ElasticSearch.
+    """
+    if not force:
+        logging.error("Deletion of repository requires --force flag.")
+        return False
+
+    elastic = _connect(esConfig)
+
+    # Create the repository
+    elastic.snapshot.delete_repository(
+        name=esConfig.repo,
+    )
+
+    logging.info(f"Repository '{esConfig.repo}' deleted successfully.")
 
     return True

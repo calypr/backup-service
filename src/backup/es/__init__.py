@@ -70,59 +70,58 @@ def _getIndices(esConfig: ESConfig) -> list[str]:
     # Get all indices using the cat.indices() method
     indices = elastic.cat.indices(h="index").splitlines()
 
+    # Remove unused '.geoip_databases' to avoid `400` error during snapshot
+    # https://www.elastic.co/docs/reference/enrich-processor/geoip-processor
+    if ".geoip_databases" in indices:
+        indices.remove(".geoip_databases")
+
     return indices
 
 
-def _dump(esConfig: ESConfig, index: str) -> str | None:
+def _snapshot(esConfig: ESConfig, indices: list[str], snapshot: str) -> str | None:
     """
-    Creates a snapshot of a single index using Elasticsearch Snapshot API.
+    Creates a snapshot of indices using Elasticsearch Snapshot API.
     """
     elastic = _connect(esConfig)
 
-    # Check if index exists before attempting to snapshot
-    if not elastic.indices.exists(index=index):
-        logging.warning(f"Index '{index}' not found")
-
     response = elastic.snapshot.create(
+        # Snapshot repo
         repository=esConfig.repo,
-        snapshot=index,
+        # Timestamp
+        snapshot=snapshot,
+        # Indices to backup
+        indices=indices,
+        # Block until complete
         wait_for_completion=True,
     )
 
+    logging.debug(f"Snapshot response: {response}")
+
     if response["snapshot"]["state"] == "SUCCESS":
-        return response["snapshot"]["snapshot_id"]
+        # TODO: Return more useful info here?
+        return response["snapshot"]["snapshot"]
     else:
-        logging.error(f"Snapshot '{index}' error: {response}")
+        logging.error(f"Snapshot error: {response}")
 
 
-def _restore(esConfig: ESConfig, index: str, snapshot: str) -> bool:
+def _restore(esConfig: ESConfig, indices: list[str], snapshot: str) -> str | None:
     """
     Restores a single index from a snapshot using Elasticsearch Snapshot API.
     """
     elastic = _connect(esConfig)
-    if elastic is None:
-        return False
-
-    # Check if the snapshot exists
-    snapshot_info = elastic.snapshot.get(repository=esConfig.repo, snapshot=snapshot)
-    if not snapshot_info["snapshots"]:
-        logging.error(f"Snapshot '{snapshot}' not found in repo '{esConfig.repo}'")
-        return False
-
-    # Close the index before restoring
-    if elastic.indices.exists(index=index):
-        elastic.indices.close(index=index)
 
     response = elastic.snapshot.restore(
         repository=esConfig.repo,
         snapshot=snapshot,
-        body={"indices": index},
+        indices=indices,
         wait_for_completion=True,
     )
 
+    logging.debug(f"Restore response: {response}")
+
     if response["snapshot"]["state"] == "SUCCESS":
-        return True
+        # TODO: Return more useful info here?
+        return response["snapshot"]["snapshot"]
 
     else:
         logging.error(f"Snapshot '{snapshot}' error: {response}")
-        return False

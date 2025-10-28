@@ -1,11 +1,12 @@
-from backup.elasticsearch import (
+from datetime import datetime
+from backup.es import (
     ESConfig,
     _getIndices,
-    _dump as _esDump,
-    _restore as _esRestore,
+    _snapshot,
+    _restore,
 )
 from . import ESConfig, es_flags
-from .repo.cli import repo, repo_flags
+from .repo.cli import repo, es_repo_flags
 from backup.options import (
     dir_flags,
 )
@@ -37,16 +38,21 @@ def ls(host: str, port: int):
 
 @es.command()
 @es_flags
-@repo_flags
-def backup(host: str, port: int, repo: str, endpoint: str, bucket: str):
+@es_repo_flags
+@click.option(
+    "--snapshot",
+    "-s",
+    required=True,
+    default=lambda: datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),
+    help="Snapshot name (will be created under the repository)",
+)
+def backup(host: str, port: int, repo: str, snapshot: str):
     """elasticsearch ➜ local"""
 
     esConfig = ESConfig(
         host=host,
         port=port,
         repo=repo,
-        endpoint=endpoint,
-        bucket=bucket,
     )
 
     indices = _getIndices(esConfig)
@@ -54,10 +60,12 @@ def backup(host: str, port: int, repo: str, endpoint: str, bucket: str):
         logging.warning(f"No indices found at {esConfig.host}:{esConfig.port}")
         return
 
-    for index in indices:
-        logging.debug(f"Backing up index '{index}'") 
-        snapshot = _esDump(esConfig, index)
-        logging.debug(f"Dumped index '{index}' to '{snapshot}'")
+    logging.debug(f"Backing up indices '{indices}' to snapshot '{snapshot}'")
+    resp = _snapshot(esConfig, indices, snapshot)
+    if resp:
+        logging.info(f"Snapshot created: {resp}")
+    else:
+        logging.error("Snapshot creation failed")
 
 
 @es.command()
@@ -76,7 +84,7 @@ def restore(host: str, port: int, snapshot: str):
 
     # Restore indices
     for index in indices:
-        _ = _esRestore(esConfig, index, snapshot)
+        _ = _restore(esConfig, index, snapshot)
 
 
 # Elasticsearch snapshot repository commands

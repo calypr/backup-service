@@ -5,7 +5,7 @@ import logging
 import warnings
 
 # Import command groups from subpackages
-from .elasticsearch.cli import es as es_command
+from .es.cli import es as es_command
 from .grip.cli import grip as grip_command
 from .postgres.cli import pg as pg_command
 from .s3.cli import s3 as s3_command
