@@ -1,3 +1,10 @@
+## [1.15.4](https://github.com/calypr/backup-service/compare/v1.15.3...v1.15.4) (2026-01-05)
+
+
+### Bug Fixes
+
+* Elasticsearch backup command in entrypoint.sh ([6f1ed6c](https://github.com/calypr/backup-service/commit/6f1ed6c488b664d24fcaff8e3cd9cd138c571740))
+
 ## [1.15.3](https://github.com/calypr/backup-service/compare/v1.15.2...v1.15.3) (2026-01-05)
 
 
