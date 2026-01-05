@@ -51,9 +51,7 @@ echo "Running S3 upload..."
 bak --debug s3 upload \
     --dir "${DIR}" \
     --endpoint "${ENDPOINT}" \
-    --bucket "${BUCKET}" \
-    --key "${ACCESS_KEY}" \
-    --secret "${SECRET_KEY}"
+    --bucket "${BUCKET}"
 
 # 4. Elasticsearch Snapshot
 # We keep the Elasticsearch backups separate from that of Postgres and GRIP
