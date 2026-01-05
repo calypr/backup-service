@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/calypr/backup-service/compare/v1.14.0...v1.15.0) (2026-01-05)
+
+
+### Features
+
+* Add additional output to entrypoint.sh ([b5930e4](https://github.com/calypr/backup-service/commit/b5930e4f537a91aa2fbf9e8d7c893be3df55fc85))
+
 # [1.14.0](https://github.com/calypr/backup-service/compare/v1.13.0...v1.14.0) (2026-01-05)
 
 
