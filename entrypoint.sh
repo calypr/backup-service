@@ -1,5 +1,6 @@
 #!/bin/bash
-set -eio pipefail
+set -e
+set -o pipefail
 
 trap 'echo "Backup failed."; exit 1' ERR
 
