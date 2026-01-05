@@ -58,7 +58,7 @@ bak --debug s3 upload \
 # to conform to the standard snapshot behavior/structure (e.g. incremental diffs)
 # Ref: https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/self-managed
 echo "Running Elasticsearch backup..."
-bak --debug es dump \
+bak --debug es backup \
     --endpoint "${ES_ENDPOINT}" \
     --bucket "${ES_BUCKET}" \
     --repo "${ES_REPO}" \

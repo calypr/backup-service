@@ -59,7 +59,7 @@ def _upload(
             )
 
     except Exception as err:
-        logging.error(f"{err}")
+        logging.error(f"Failed to Upload: {err}")
         return err
 
 
