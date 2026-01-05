@@ -1,3 +1,35 @@
+# [1.14.0](https://github.com/calypr/backup-service/compare/v1.13.0...v1.14.0) (2026-01-05)
+
+
+### Bug Fixes
+
+* Add `gcc` dependency to Dockerfile for psycopg2 build ([5c0eebc](https://github.com/calypr/backup-service/commit/5c0eebc015c594f9dc39e5109d3fc703284d5984))
+* Downgrade PostgreSQL in Backup Service to match Server version ([0b197fe](https://github.com/calypr/backup-service/commit/0b197fed399c51bb30c7330d9c7f89ab93171815))
+* Remove `limit` parameter from Grip functions ([8473b3c](https://github.com/calypr/backup-service/commit/8473b3c87609865a8798271f968d990caeae1d23))
+* Remove aced-submission dependency ([887a79c](https://github.com/calypr/backup-service/commit/887a79cb98c259c40baad5f93978bbc41d89128a))
+* Remove PGPASSWORD parameters in favor of env vars ([53e2c7f](https://github.com/calypr/backup-service/commit/53e2c7fa0deb1d73077ab1783509af1e7916c529))
+* Remove unused PGPASSWORD flag ([c650674](https://github.com/calypr/backup-service/commit/c650674190ce9e5477a4fe768cb165c1722bbdd5))
+* Replace psycopg2-binary with psycopg2 to fix build errors ([7c027bd](https://github.com/calypr/backup-service/commit/7c027bde10f2c6b388e85b8e0b31ecff8c052862))
+* update `pg_dump` env vars ([c9581a3](https://github.com/calypr/backup-service/commit/c9581a35385633aedbeeb9dfcece6ae4806fbebc))
+* Update call to get edges to match latest syntax (`G.V().outE()`) ([0cbdd80](https://github.com/calypr/backup-service/commit/0cbdd8089e2ae0c47fa503a4354ba05b11aced51))
+* Update Dockerfile ([2daf67f](https://github.com/calypr/backup-service/commit/2daf67f1046c7768dedcee2befef51f843ad8cf0))
+* Update Dockerfile to include `pg_config` before Python build ([4e81901](https://github.com/calypr/backup-service/commit/4e819017583aeb7ca39160e9d09a805f8f5ef392))
+* Update Dockerfile to install postgresql-client-14 ([581e39f](https://github.com/calypr/backup-service/commit/581e39f30407ba63aa82284b812e6863b5a85ab7))
+* Update tests + re-add `--vertex` flag to GRIP command ([2b98f35](https://github.com/calypr/backup-service/commit/2b98f35837c6289b0ab7eaa518f01388f8cb8637))
+
+
+### Features
+
+* Add custom Elasticsearch Docker image with S3 Plugin installed ([4f2949d](https://github.com/calypr/backup-service/commit/4f2949d65a7ae93ab6596aff2810dd410b6c9ee8))
+* Add initial support for Elastic Snapshot Restore ([645142d](https://github.com/calypr/backup-service/commit/645142df8adc105098fb2dbaafbcbab7d829f5f0))
+* Add initial support for Elasticsearch snapshots ([5ae148f](https://github.com/calypr/backup-service/commit/5ae148f66ee0fd8ffed005447b01de445b345648))
+* Add working ES snapshot repo initialization ([abeed25](https://github.com/calypr/backup-service/commit/abeed2574af3d9f4d40b8419581affede5bcba23))
+* Move CLI functions to respective modules ([a7d2e67](https://github.com/calypr/backup-service/commit/a7d2e676905f871dab6620dd457371c2b8cc7bdf))
+* Re-add support for ElasticSearch backups ([6db260b](https://github.com/calypr/backup-service/commit/6db260bb21a115056022b0943e345f85fe86d60a))
+* Support env variables for S3 credentials ([4cddc79](https://github.com/calypr/backup-service/commit/4cddc797260a75e8178e3772ecf3ffd16f418b6e))
+* Update call to GRIP edges ([35c70b4](https://github.com/calypr/backup-service/commit/35c70b46cad2a4858ea596e9d740ecf44686048b))
+* Update entrypoint.sh ([9edb44c](https://github.com/calypr/backup-service/commit/9edb44c1ecae4afaa7b65e0976d0de97596fc793))
+
 # [1.13.0](https://github.com/calypr/backup-service/compare/v1.12.1...v1.13.0) (2025-09-10)
 
 
