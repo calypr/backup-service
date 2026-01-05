@@ -2,6 +2,7 @@ import os
 from backup.postgres import PGConfig
 from backup.s3 import S3Config
 from minio import Minio
+from minio.credentials.providers import EnvAWSProvider
 from pathlib import Path
 from testcontainers.minio import MinioContainer
 from testcontainers.postgres import PostgresContainer
@@ -50,22 +51,21 @@ def testS3():
         host = minio.get_container_host_ip()
         port = minio.get_exposed_port(minio.port)
 
-        key = minio.access_key
-        secret = minio.secret_key
+        os.environ["AWS_ACCESS_KEY_ID"] = minio.access_key
+        os.environ["AWS_SECRET_ACCESS_KEY"] = minio.secret_key
+
         endpoint = f"{host}:{port}"
         logging.debug(f"MinIO ready at {endpoint}")
 
         # MinIO client
-        client = Minio(
-            f"{host}:{port}", access_key=key, secret_key=secret, secure=False
-        )
+        client = Minio(f"{host}:{port}", credentials=EnvAWSProvider(), secure=False)
 
         # Test bucket
         bucket = "test"
         client.make_bucket(bucket)
         logging.debug(f"Created bucket: {bucket}")
 
-        yield S3Config(endpoint=f"{host}:{port}", bucket=bucket, key=key, secret=secret)
+        yield S3Config(endpoint=f"{host}:{port}", bucket=bucket)
 
 
 @pytest.fixture(scope="session")

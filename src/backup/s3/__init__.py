@@ -11,8 +11,6 @@ class S3Config:
 
     endpoint: str
     bucket: str
-    key: str
-    secret: str
 
 
 def _getS3Client(s3: S3Config):
@@ -25,8 +23,6 @@ def _getS3Client(s3: S3Config):
 
     return Minio(
         f"{s3.endpoint}",
-        access_key=s3.key,
-        secret_key=s3.secret,
         credentials=EnvAWSProvider(),
         secure=True,
     )

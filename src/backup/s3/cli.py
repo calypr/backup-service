@@ -34,7 +34,7 @@ def s3():
 
 @s3.command()
 @s3_flags
-def ls(endpoint: str, bucket: str, key: str, secret: str):
+def ls(endpoint: str, bucket: str):
     # TODO: Implement
     pass
 
@@ -42,9 +42,9 @@ def ls(endpoint: str, bucket: str, key: str, secret: str):
 @s3.command()
 @s3_flags
 @dir_flags
-def download(endpoint: str, bucket: str, key: str, secret: str, dir: Path):
+def download(endpoint: str, bucket: str, dir: Path):
     """s3 ➜ local"""
-    conf = S3Config(endpoint=endpoint, bucket=bucket, key=key, secret=secret)
+    conf = S3Config(endpoint=endpoint, bucket=bucket)
 
     # Download from S3
     _ = _download(conf, dir)
@@ -53,9 +53,9 @@ def download(endpoint: str, bucket: str, key: str, secret: str, dir: Path):
 @s3.command()
 @s3_flags
 @dir_flags
-def upload(endpoint: str, bucket: str, key: str, secret: str, dir: Path):
+def upload(endpoint: str, bucket: str, dir: Path):
     """local ➜ s3"""
-    s3 = S3Config(endpoint=endpoint, bucket=bucket, key=key, secret=secret)
+    s3 = S3Config(endpoint=endpoint, bucket=bucket)
 
     # Upload to S3
     _ = _upload(s3, dir)
