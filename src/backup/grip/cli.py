@@ -39,27 +39,27 @@ def grip_host_flags(fn):
         fn = option(fn)
     return fn
 
+
 # GRIP Graph Flags
 def grip_flags(fn):
     options = [
-        click.option("--graph", "-g", default="CALYPR", help="Name of the GRIP graph."), 
-        # click.option(
-        #     "--edge",
-        #     "--edges",
-        #     "-e",
-        #     is_flag=True,
-        #     default=False,
-        #     help="Output GRIP edges.",
-        # ),
-        # click.option("--graph", "-g", default="CALYPR", help="Name of the GRIP graph."),
-        # click.option(
-        #     "--vertex",
-        #     "--vertices",
-        #     "-v",
-        #     is_flag=True,
-        #     default=False,
-        #     help="Output GRIP vertices.",
-        # ),
+        click.option("--graph", "-g", default="CALYPR", help="Name of the GRIP graph."),
+        click.option(
+            "--edge",
+            "--edges",
+            "-e",
+            is_flag=True,
+            default=False,
+            help="Output GRIP edges.",
+        ),
+        click.option(
+            "--vertex",
+            "--vertices",
+            "-v",
+            is_flag=True,
+            default=False,
+            help="Output GRIP vertices.",
+        ),
     ]
     for option in reversed(options):
         fn = option(fn)
@@ -84,6 +84,7 @@ def ls(host: str, port: int):
 
 @grip.command()
 @grip_host_flags
+@grip_flags
 @dir_flags
 def backup(host: str, port: int, graph: str, vertex: bool, edge: bool, dir: Path):
     """grip ➜ local"""
