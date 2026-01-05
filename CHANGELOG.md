@@ -1,3 +1,10 @@
+## [1.15.5](https://github.com/calypr/backup-service/compare/v1.15.4...v1.15.5) (2026-01-05)
+
+
+### Bug Fixes
+
+* Remove `endpoint` parameter from Elasticsearch ([f8bb05b](https://github.com/calypr/backup-service/commit/f8bb05b8902e92f47d49eec509201c0116581189))
+
 ## [1.15.4](https://github.com/calypr/backup-service/compare/v1.15.3...v1.15.4) (2026-01-05)
 
 
