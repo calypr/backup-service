@@ -1,3 +1,10 @@
+## [1.15.3](https://github.com/calypr/backup-service/compare/v1.15.2...v1.15.3) (2026-01-05)
+
+
+### Bug Fixes
+
+* Remove deprecated S3 credential flags ([0e9c3b4](https://github.com/calypr/backup-service/commit/0e9c3b4e000b8090efe4892f143f8f2f302aa826))
+
 ## [1.15.2](https://github.com/calypr/backup-service/compare/v1.15.1...v1.15.2) (2026-01-05)
 
 
