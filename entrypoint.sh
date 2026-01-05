@@ -59,7 +59,6 @@ bak --debug s3 upload \
 # Ref: https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/self-managed
 echo "Running Elasticsearch backup..."
 bak --debug es backup \
-    --endpoint "${ES_ENDPOINT}" \
     --bucket "${ES_BUCKET}" \
     --repo "${ES_REPO}" \
     --snapshot "${DIR}" \

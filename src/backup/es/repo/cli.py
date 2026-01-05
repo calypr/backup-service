@@ -49,7 +49,7 @@ def listRepos(host: str, port: int):
 @es_flags
 @es_repo_flags
 @s3_flags
-def initRepo(host: str, port: int, repo: str, endpoint: str, bucket: str):
+def initRepo(host: str, port: int, repo: str, bucket: str):
     """Initialize a snapshot repository"""
 
     # Create ElasticSearchConfig including S3 endpoint and bucket for repository creation
@@ -57,7 +57,6 @@ def initRepo(host: str, port: int, repo: str, endpoint: str, bucket: str):
         host=host,
         port=port,
         repo=repo,
-        endpoint=endpoint,
         bucket=bucket,
     )
 

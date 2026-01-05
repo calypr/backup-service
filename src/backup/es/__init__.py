@@ -41,7 +41,6 @@ class ESConfig:
     # https://www.elastic.co/docs/deploy-manage/tools/snapshot-and-restore/self-managed
     repo: str = ""
     bucket: str = ""
-    endpoint: str = ""
 
 
 def _connect(esConfig: ESConfig) -> Elasticsearch:
