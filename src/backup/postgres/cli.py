@@ -102,4 +102,7 @@ def restore(host: str, port: int, user: str, dir: Path):
 
     # Restore databases
     for database in dbs:
+        if database == "gecko_cbds" or database == "metadata_cbds":
+            logging.debug("Skipping restore of gecko and metadata databases...")
+            continue
         _ = _pgRestore(conf, database, dir)

@@ -1,5 +1,7 @@
 #!/bin/bash
-set -e
+set -eio pipefail
+
+trap 'echo "Backup failed."; exit 1' ERR
 
 #  Backup Overview/Structure:
 # 

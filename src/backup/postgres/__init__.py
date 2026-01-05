@@ -117,7 +117,7 @@ def _restore(pgConfig: PGConfig, db: str, dir: Path) -> Path:
         logging.error("pg_restore not found in PATH")
 
     command = [
-        "pg_restore",
+        "psql",
         "-U",
         pgConfig.user,
         "-h",
@@ -126,7 +126,7 @@ def _restore(pgConfig: PGConfig, db: str, dir: Path) -> Path:
         str(pgConfig.port),
         "-d",
         db,
-        "--no-password",
+        "-f",
         dump.as_posix(),
     ]
 
