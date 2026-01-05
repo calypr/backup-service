@@ -1,18 +1,9 @@
-# TODO: Using rc here to avoid psycopg errors:
-#   ERROR: Failed building wheel for psycopg2-binary
-#   error: expression is not assignable
-#   error: call to undeclared function 'gettimeofday'; 
-# 
-# Use non-rc version of aced-submission when released:
-#   https://pypi.org/project/aced-submission/#history
-aced-submission>=0.0.10rc18
 click
 click-aliases
 elasticsearch
 gripql
 minio
 orjson
-# psycopg2-binary
 psycopg2
 pytest
 
