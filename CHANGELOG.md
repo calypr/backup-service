@@ -1,3 +1,11 @@
+## [1.15.1](https://github.com/calypr/backup-service/compare/v1.15.0...v1.15.1) (2026-01-05)
+
+
+### Bug Fixes
+
+* entrypoint.sh ([b65c7a0](https://github.com/calypr/backup-service/commit/b65c7a0dfc4e8b189ef38e28484bd9f25bd99e0a))
+* Re-add missing GRIP flags ([e6e05af](https://github.com/calypr/backup-service/commit/e6e05af4063a55ebfa16289deb75f7116d1deab7))
+
 # [1.15.0](https://github.com/calypr/backup-service/compare/v1.14.0...v1.15.0) (2026-01-05)
 
 
