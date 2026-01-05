@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from psycopg2.extensions import connection
 import logging
+import os
 import psycopg2
 import shutil
 import subprocess
@@ -14,7 +15,6 @@ class PGConfig:
     host: str
     port: int
     user: str
-    password: str
 
 
 def _connect(pgConfig: PGConfig) -> connection:
@@ -24,14 +24,13 @@ def _connect(pgConfig: PGConfig) -> connection:
     assert pgConfig.host, "Host must not be empty"
     assert pgConfig.port, "Port must not be empty"
     assert pgConfig.user, "User must not be empty"
-    assert pgConfig.password, "Password must not be empty"
 
     try:
         connection = psycopg2.connect(
             user=pgConfig.user,
-            password=pgConfig.password,
             host=pgConfig.host,
             port=pgConfig.port,
+            password=os.getenv("PGPASSWORD"),
         )
     except Exception as err:
         logging.error(f"Error connecting to Postgres: {err}")
@@ -80,9 +79,6 @@ def _dump(pgConfig: PGConfig, db: str, dir: Path) -> Path:
         "--no-password",
     ]
 
-    # Set the environment variable for the password
-    env = {"PGPASSWORD": pgConfig.password}
-
     # Dump File
     dump = Path(f"{dir}/{db}.sql")
 
@@ -96,10 +92,12 @@ def _dump(pgConfig: PGConfig, db: str, dir: Path) -> Path:
                 stdout=out,
                 stderr=subprocess.PIPE,
                 check=True,
-                env=env,
+                env=os.environ.copy(),
             )
         except subprocess.CalledProcessError as e:
-            logging.error(f"Error dumping database '{db}': {e}, stderr: {e.stderr.decode() if e.stderr else ''}")
+            logging.error(
+                f"Error dumping database '{db}': {e}, stderr: {e.stderr.decode() if e.stderr else ''}"
+            )
             raise
 
     return dump
@@ -115,12 +113,11 @@ def _restore(pgConfig: PGConfig, db: str, dir: Path) -> Path:
         logging.error(f"Dump file {dump} does not exist")
         raise FileNotFoundError(f"Dump file {dump} does not exist")
 
-
     if not shutil.which("pg_restore"):
         logging.error("pg_restore not found in PATH")
 
     command = [
-        "pg_restore",
+        "psql",
         "-U",
         pgConfig.user,
         "-h",
@@ -129,7 +126,7 @@ def _restore(pgConfig: PGConfig, db: str, dir: Path) -> Path:
         str(pgConfig.port),
         "-d",
         db,
-        "--no-password",
+        "-f",
         dump.as_posix(),
     ]
 
@@ -145,4 +142,11 @@ def _restore(pgConfig: PGConfig, db: str, dir: Path) -> Path:
         return dump
 
     except subprocess.CalledProcessError as e:
-        raise
+        stdout = e.stdout.decode(errors="replace") if e.stdout else ""
+        stderr = e.stderr.decode(errors="replace") if e.stderr else ""
+        logging.error(
+            f"Error restoring database '{db}': returncode={e.returncode}; stdout={stdout}; stderr={stderr}"
+        )
+        raise RuntimeError(
+            f"pg_restore failed for '{db}': returncode={e.returncode}; stdout={stdout}; stderr={stderr}"
+        ) from e

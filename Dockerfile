@@ -1,27 +1,27 @@
-# GRIP build
-# Ref: https://github.com/bmeg/grip/blob/develop/Dockerfile
-FROM golang:1.17.2-alpine AS grip
-
-RUN apk add --no-cache make git bash build-base
-
-ENV GOPATH=/go
-ENV PATH="/go/bin:${PATH}"
-
-WORKDIR /go/src/github.com/bmeg
-
-RUN git clone https://github.com/bmeg/grip
-
-WORKDIR /go/src/github.com/bmeg/grip
-
-# Checkout latest GRIP tag. Example:
-# $ git describe --tags --abbrev=0
-# v1.9.0
-RUN git checkout $(git describe --tags --abbrev=0)
-
-RUN make install
-
 # Backup build
 FROM python:slim
+
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  gcc \
+  libpq-dev 
+
+RUN apt-get install -y postgresql-common
+
+RUN YES=true /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+
+# Note: We're using Postgres 14 to match the version set in Gen3-Helm:
+#
+# Gen3-Helm Chart: https://github.com/calypr/gen3-helm/blob/v1.0.0/helm/gen3/Chart.yaml#L92-L94
+#
+# Postgres Chart: https://github.com/bitnami/charts/blob/postgresql/11.9.13/bitnami/postgresql/Chart.yaml#L4
+#
+# ```
+# ➜ kubectl exec --stdin --tty StatefulSets/cbds-postgresql -- /bin/bash
+# $ psql --version
+# psql (PostgreSQL) 14.5
+# ```
+RUN apt-get update && apt-get install -y postgresql-client-14
 
 WORKDIR /app
 
@@ -38,10 +38,5 @@ RUN mkdir -p /backups
 
 COPY entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
-
-RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client
-
-# Copy GRIP binary from build stage
-COPY --from=grip /go/bin/grip /usr/local/bin/grip
 
 ENTRYPOINT ["./entrypoint.sh"]

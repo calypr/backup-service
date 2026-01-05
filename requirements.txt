@@ -4,9 +4,8 @@ elasticsearch
 gripql
 minio
 orjson
-psycopg2-binary
+psycopg2
 pytest
 
 # Development dependencies
-# TODO: Move to separate file (e.g. dev-requirements.txt)
 testcontainers

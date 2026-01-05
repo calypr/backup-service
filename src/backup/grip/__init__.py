@@ -32,7 +32,24 @@ class GripConfig:
     port: int
 
 
-def _getEdges(grip: GripConfig, graph: str, limit: int) -> list[str]:
+def _getGraphs(grip: GripConfig) -> list[str]:
+    """
+    Utility function to connect to Grip and list all graphs.
+    """
+
+    # Connect to Grip
+    c = _connect(grip)
+
+    # List Graphs
+    graphs = []
+
+    for g in c.listGraphs():
+        graphs.append(g)
+
+    return graphs
+
+
+def _getEdges(grip: GripConfig, graph: str) -> list[str]:
     """
     Utility function to connect to Grip and list all edges.
     """
@@ -45,13 +62,13 @@ def _getEdges(grip: GripConfig, graph: str, limit: int) -> list[str]:
 
     G = c.graph(graph)
 
-    for i in G.query().E().limit(limit):
+    for i in G.V().outE():
         edges.append(i)
 
     return edges
 
 
-def _getVertices(grip: GripConfig, graph: str, limit: int) -> list[str]:
+def _getVertices(grip: GripConfig, graph: str) -> list[str]:
     """
     Utility function to connect to Grip and list all vertices.
     """
@@ -62,7 +79,7 @@ def _getVertices(grip: GripConfig, graph: str, limit: int) -> list[str]:
 
     G = c.graph(graph)
 
-    for i in G.query().V().limit(limit):
+    for i in G.V():
         vertices.append(i)
 
     return vertices
@@ -83,32 +100,43 @@ def _connect(grip: GripConfig) -> gripql.Connection:
     return client
 
 
-def _dump(grip: GripConfig, graph: str, limit: int, vertex: bool, edge: bool, out: Path) -> None:
+def _dump(grip: GripConfig, graph: str, vertex: bool, edge: bool, out: Path) -> None:
     # Dump
     conn = _connect(grip)
     G = conn.graph(graph)
 
+    # Run single query to get all vertices
+    # Rather than G.V() and G.V().outE()
+    vertices = G.V()
+
     # write vertex and edge objects from grip DB to file
     if vertex:
         with open(out / f"{graph}.vertices", "wb") as f:
-            for i in G.query().V().limit(limit):
+            for i in vertices:
                 f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
     if edge:
         with open(out / f"{graph}.edges", "wb") as f:
-            for i in G.query().E().limit(limit):
+            # Note:
+            #   Using G.V().outE() here to return all edges
+            #   G.V().BothE() would return duplicate edges (outbound and inbound)
+            #   Ref: https://github.com/bmeg/grip/blob/0.8.0/conformance/tests/ot_basic.py#L129-L140
+            for i in vertices.outE():
                 f.write(orjson.dumps(i, option=orjson.OPT_APPEND_NEWLINE))
 
     # TODO: At this point you will need to reconnect to the new grip instance to load the data that was dumped
 
 
 def _restore(grip: GripConfig, graph: str, dir: Path):
+    ## Clean/Delete existing graph
+    ## GRIP initdb job (templates/post-install)
+
     ## Load
     conn = _connect(grip)
     G = conn.graph(graph)
 
     bulkV = G.bulkAdd()
-    with open("grip.vertices", "rb") as f:
+    with open(dir / f"{graph}.vertices", "rb") as f:
         count = 0
         for i in f:
             data = orjson.loads(i)
@@ -123,7 +151,7 @@ def _restore(grip: GripConfig, graph: str, dir: Path):
     print("Vertices load res: ", str(err))
 
     bulkE = G.bulkAdd()
-    with open("grip.edges", "rb") as f:
+    with open(dir / f"{graph}.edges", "rb") as f:
         count = 0
         for i in f:
             data = orjson.loads(i)
@@ -132,7 +160,7 @@ def _restore(grip: GripConfig, graph: str, dir: Path):
             _to = data["_to"]
             _from = data["_from"]
             del data["_id"], data["_label"], data["_to"], data["_from"]
-            bulkE.addEdge(_to, _from, _label, data=data, gid=_id)
+            bulkE.addEdge(_to, _from, _label, data=data, id=_id)
             count += 1
             if count % 10000 == 0:
                 print("loaded %d edges" % count)

@@ -1,3 +1,4 @@
+import os
 from backup.postgres import PGConfig
 from backup.s3 import S3Config
 from minio import Minio
@@ -26,11 +27,12 @@ def testPostgres():
     with PostgresContainer("postgres") as postgres:
         logging.debug(f"Postgres ready at {postgres.get_connection_url}")
 
+        # Set PGPASSWORD environment variable for authentication
+        os.environ["PGPASSWORD"] = postgres.password
+
         yield PGConfig(
             # Default: test
             user=postgres.username,
-            # Default: test
-            password=postgres.password,
             host="localhost",
             port=postgres.get_exposed_port(5432),
         )
