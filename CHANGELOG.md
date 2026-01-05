@@ -1,3 +1,10 @@
+## [1.15.6](https://github.com/calypr/backup-service/compare/v1.15.5...v1.15.6) (2026-01-05)
+
+
+### Bug Fixes
+
+* Remove deprecated Elasticsearch flag ([405d965](https://github.com/calypr/backup-service/commit/405d9659a8b738e33f271e28c16673fdbbe0fe06))
+
 ## [1.15.5](https://github.com/calypr/backup-service/compare/v1.15.4...v1.15.5) (2026-01-05)
 
 
